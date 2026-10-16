@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h2 class="h4 mb-3">Login</h2>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ next }}">
+          {% include "accounts/includes/form_fields.html" %}
+          <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+        <hr>
+        <p class="small mb-0">New here? <a href="{% url 'accounts:register' %}">Create a citizen account</a>
+          or <a href="{% url 'accounts:authority_register' %}">apply as an authority</a>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <h1 class="h4 mb-0">{{ user.get_full_name|default:user.username }}</h1>
+            <span class="text-muted">@{{ user.username }}</span>
+          </div>
+          <span class="badge text-bg-primary">{{ user.get_role_display }}</span>
+        </div>
+
+        <ul class="list-group list-group-flush mb-3">
+          <li class="list-group-item d-flex justify-content-between"><span>Email</span><strong>{{ user.email|default:"-" }}</strong></li>
+          <li class="list-group-item d-flex justify-content-between"><span>Member since</span><strong>{{ user.date_joined|date:"d M Y" }}</strong></li>
+          {% if user.is_citizen %}
+            <li class="list-group-item d-flex justify-content-between"><span>Reporter Trust Score</span><strong>{{ user.trust_score_display }}</strong></li>
+            <li class="list-group-item d-flex justify-content-between"><span>Reports (verified / total)</span><strong>{{ user.verified_reports_count }} / {{ user.total_reports_count }}</strong></li>
+          {% endif %}
+          {% if user.is_authority and profile %}
+            <li class="list-group-item d-flex justify-content-between"><span>Department</span><strong>{{ profile.department }}</strong></li>
+            <li class="list-group-item d-flex justify-content-between"><span>Assigned area</span><strong>{{ profile.assigned_area_name }}</strong></li>
+            <li class="list-group-item d-flex justify-content-between"><span>Approval status</span><strong>{{ profile.get_approval_status_display }}</strong></li>
+          {% endif %}
+        </ul>
+
+        <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-primary">
+          <i class="bi bi-key"></i> Change password
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Approval Status{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card shadow-sm text-center">
+      <div class="card-body p-5">
+
+        {% if profile.approval_status == "rejected" %}
+          <i class="bi bi-x-circle text-danger" style="font-size:3rem"></i>
+          <h2 class="h4 mt-3">Application rejected</h2>
+          <p class="text-muted">Unfortunately your authority application was not approved.</p>
+          {% if profile.rejection_reason %}
+            <div class="alert alert-danger text-start">
+              <strong>Reason:</strong> {{ profile.rejection_reason }}
+            </div>
+          {% endif %}
+
+        {% elif profile %}
+          <i class="bi bi-hourglass-split text-warning" style="font-size:3rem"></i>
+          <h2 class="h4 mt-3">Awaiting administrator approval</h2>
+          <p class="text-muted">
+            Your application is under review. You will be able to access the authority
+            dashboard once an administrator approves your account.
+          </p>
+
+        {% else %}
+          <i class="bi bi-exclamation-triangle text-warning" style="font-size:3rem"></i>
+          <h2 class="h4 mt-3">Authority profile missing</h2>
+          <p class="text-muted">Your account has no authority profile. Please contact an administrator.</p>
+        {% endif %}
+
+        {% if profile %}
+          <ul class="list-group text-start mt-4">
+            <li class="list-group-item d-flex justify-content-between"><span>Department</span><strong>{{ profile.department }}</strong></li>
+            <li class="list-group-item d-flex justify-content-between"><span>Assigned area</span><strong>{{ profile.assigned_area_name }}</strong></li>
+            <li class="list-group-item d-flex justify-content-between"><span>Status</span><strong>{{ profile.get_approval_status_display }}</strong></li>
+          </ul>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Authority Registration{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h2 class="h4 mb-1">Authority application</h2>
+        <div class="alert alert-info small">
+          <i class="bi bi-info-circle"></i>
+          Authority accounts must be approved by an administrator before you can manage reports.
+        </div>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% include "accounts/includes/form_fields.html" %}
+          <button type="submit" class="btn btn-primary w-100">Submit application</button>
+        </form>
+        <hr>
+        <p class="small mb-0">Just a resident? <a href="{% url 'accounts:register' %}">Register as a citizen</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

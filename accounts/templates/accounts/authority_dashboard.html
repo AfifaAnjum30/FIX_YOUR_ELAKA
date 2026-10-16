@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Authority Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0">Authority Dashboard</h1>
+  <span class="badge text-bg-success fs-6"><i class="bi bi-patch-check"></i> Approved</span>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-4 mb-2 mb-md-0">
+        <div class="text-muted small">Department</div>
+        <div class="fw-semibold">{{ profile.department }}</div>
+      </div>
+      <div class="col-md-4 mb-2 mb-md-0">
+        <div class="text-muted small">Assigned area</div>
+        <div class="fw-semibold">{{ profile.assigned_area_name }}</div>
+      </div>
+      <div class="col-md-4">
+        <div class="text-muted small">Approved</div>
+        <div class="fw-semibold">
+          {{ profile.approved_at|date:"d M Y" }}
+          {% if profile.approved_by %}by {{ profile.approved_by }}{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <div class="text-muted small">Pending reports</div><div class="display-6">&mdash;</div>
+    </div></div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <div class="text-muted small">In progress</div><div class="display-6">&mdash;</div>
+    </div></div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <div class="text-muted small">Resolved</div><div class="display-6">&mdash;</div>
+    </div></div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <div class="text-muted small">Needs verification</div><div class="display-6">&mdash;</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="alert alert-secondary mb-0">
+  Report statistics for <strong>{{ profile.assigned_area_name }}</strong> will appear here once the Reports app is added.
+</div>
+{% endblock %}
