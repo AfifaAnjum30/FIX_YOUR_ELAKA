@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Categories | FixIt Local{% endblock %}
+{% block content %}<h1 class="h2 mb-4">Report categories</h1><div class="row g-3">
+{% for category in categories %}<div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm"><div class="card-body"><div class="small text-muted">{{ category.get_type_display }}</div><h2 class="h5">{{ category.name }}</h2><p>{{ category.description|default:'Local community concern' }}</p></div></div></div>
+{% empty %}<p>No categories added yet.</p>{% endfor %}
+</div>{% endblock %}

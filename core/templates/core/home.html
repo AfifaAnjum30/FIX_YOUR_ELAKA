@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}FixIt Local | Home{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'core/css/site.css' %}">
+<section class="core-hero p-5 rounded-4 mb-4">
+  <h1 class="display-5 fw-bold">Fix your neighborhood, together.</h1>
+  <p class="lead">Discover community issues, explore local areas, and follow verified reports.</p>
+  <a class="btn btn-light btn-lg" href="{% url 'core:map' %}">Explore map</a>
+  <a class="btn btn-outline-light btn-lg" href="{% url 'core:areas' %}">Browse areas</a>
+  {% if not user.is_authenticated %}<a class="btn btn-outline-light btn-lg" href="{% url 'accounts:register' %}">Join now</a>{% endif %}
+</section>
+<div class="row g-3">
+  <div class="col-md-6"><div class="card shadow-sm"><div class="card-body"><h2 class="h4">{{ area_count }} areas</h2><p>Neighborhoods covered by the platform.</p><a href="{% url 'core:areas' %}">View areas →</a></div></div></div>
+  <div class="col-md-6"><div class="card shadow-sm"><div class="card-body"><h2 class="h4">{{ category_count }} categories</h2><p>Types of local problems you can report.</p><a href="{% url 'core:categories' %}">View categories →</a></div></div></div>
+</div>
+{% endblock %}
