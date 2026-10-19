@@ -2,9 +2,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const el = document.getElementById('community-map');
   if (!el || typeof L === 'undefined') return;
   const map = L.map(el).setView([23.8103, 90.4125], 11);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
-  }).addTo(map);
+
+  L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    {
+        maxZoom: 19,
+        attribution: "Tiles © Esri"
+    }).addTo(map);
+
   const feedback = document.getElementById('map-feedback');
   const params = new URLSearchParams(new FormData(document.getElementById('map-filters')));
   try {
