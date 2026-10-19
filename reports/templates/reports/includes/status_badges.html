@@ -1,0 +1,8 @@
+{# Usage: {% include "reports/includes/status_badges.html" with report=report %} #}
+<span class="badge {% if report.operational_status == 'resolved' %}text-bg-success{% elif report.operational_status == 'closed' %}text-bg-dark{% elif report.operational_status == 'problem_fixed' %}text-bg-info{% elif report.operational_status == 'in_progress' %}text-bg-warning{% else %}text-bg-secondary{% endif %}">
+  {{ report.get_operational_status_display }}
+</span>
+<span class="badge {% if report.verification_status == 'verified' %}text-bg-success{% elif report.verification_status == 'rejected' %}text-bg-danger{% else %}text-bg-light border text-dark{% endif %}">
+  <i class="bi {% if report.verification_status == 'verified' %}bi-patch-check{% elif report.verification_status == 'rejected' %}bi-x-circle{% else %}bi-hourglass-split{% endif %}"></i>
+  {{ report.get_verification_status_display }}
+</span>
