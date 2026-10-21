@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Report</title>
+</head>
+<body>
+    <h2>Verify Report: {{ report.title }}</h2>
+
+    <p>{{ report.description }}</p>
+    <p>Area: {{ report.area }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit Verification</button>
+    </form>
+</body>
+</html>

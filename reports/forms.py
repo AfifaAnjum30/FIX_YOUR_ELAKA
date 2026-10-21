@@ -1,6 +1,9 @@
 from django import forms
 
 from .models import Report
+from django import forms
+from .models import Report
+
 
 
 class ReportCreateForm(forms.ModelForm):
@@ -42,3 +45,31 @@ class ReportCreateForm(forms.ModelForm):
         if len(title) < 5:
             raise forms.ValidationError("Please give the report a more descriptive title (at least 5 characters).")
         return title
+
+
+class VerificationForm(forms.Form):
+        status = forms.ChoiceField(
+            choices=[
+                ('verified', 'Verify Report'),
+                ('rejected', 'Reject Report'),
+            ]
+        )
+        remarks = forms.CharField(
+            widget=forms.Textarea,
+            required=False
+        )
+
+class ReportStatusForm(forms.ModelForm):
+        class Meta:
+            model = Report
+            fields = [
+                'operational_status',
+                'after_image',
+                'resolution_note',
+            ]
+
+            widgets = {
+                'resolution_note': forms.Textarea(
+                    attrs={'rows': 3}
+                ),
+            }

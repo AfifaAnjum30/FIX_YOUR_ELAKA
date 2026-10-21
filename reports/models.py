@@ -1,4 +1,6 @@
 from django.db import models
+from django.db import models
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 import os
@@ -27,6 +29,7 @@ def before_image_path(instance, filename):
 
 def after_image_path(instance, filename):
     return _unique_path("after", filename)
+
 
 
 class Report(models.Model):
@@ -212,3 +215,61 @@ class Report(models.Model):
             remarks=remarks,
         )
         return previous
+
+
+class Verification(models.Model):
+        report = models.OneToOneField(
+            'reports.Report',
+            on_delete=models.CASCADE,
+            related_name='verification'
+        )
+
+        reviewed_by = models.ForeignKey(
+            'accounts.AuthorityProfile',
+            on_delete=models.SET_NULL,
+            null=True,
+            related_name='verifications'
+        )
+
+        status = models.CharField(
+            max_length=20,
+            choices=[
+                ('pending', 'Pending'),
+                ('verified', 'Verified'),
+                ('rejected', 'Rejected'),
+            ]
+        )
+
+        remarks = models.TextField(blank=True)
+        verified_at = models.DateTimeField(auto_now=True)
+
+        def __str__(self):
+            return f"{self.report.title} - {self.status}"
+
+class ReportStatusHistory(models.Model):
+        report = models.ForeignKey(
+            'reports.Report',
+            on_delete=models.CASCADE,
+            related_name='status_history'
+        )
+
+        previous_status = models.CharField(max_length=20)
+        new_status = models.CharField(max_length=20)
+
+        changed_by = models.ForeignKey(
+            'accounts.AuthorityProfile',
+            on_delete=models.SET_NULL,
+            null=True,
+            related_name='status_changes'
+        )
+
+        remarks = models.TextField(blank=True)
+        changed_at = models.DateTimeField(auto_now_add=True)
+
+        class Meta:
+            ordering = ['-changed_at']
+
+        def __str__(self):
+            return f"{self.report.title}: {self.previous_status} -> {self.new_status}"
+
+
