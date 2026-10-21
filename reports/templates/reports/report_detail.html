@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ report.title }} | FixIt Local{% endblock %}
+
+{% block extra_head %}{{ block.super }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<style>#detail-map { height: 260px; border-radius: .5rem; }</style>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'reports:list' %}">Reports</a></li>
+    <li class="breadcrumb-item active" aria-current="page">#{{ report.pk }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+  <div>
+    <h1 class="h3 mb-2">{{ report.title }}</h1>
+    {% include "reports/includes/status_badges.html" %}
+    {% if report.is_safety %}<span class="badge text-bg-warning"><i class="bi bi-shield-exclamation"></i> Safety concern (not public)</span>{% endif %}
+  </div>
+  <div class="text-muted small text-md-end mt-2 mt-md-0">
+    Reported by <strong>{{ report.reporter.username }}</strong><br>
+    {{ report.created_at|date:"d M Y, H:i" }}
+  </div>
+</div>
+
+{# Progress tracker #}
+<div class="card shadow-sm mb-4"><div class="card-body">
+  <ol class="list-unstyled d-flex flex-wrap gap-3 mb-0">
+    {% for key, label in workflow_steps %}
+      <li class="{% if key == report.operational_status %}fw-bold text-primary{% else %}text-muted{% endif %}">
+        <i class="bi {% if key == report.operational_status %}bi-record-circle-fill{% else %}bi-circle{% endif %}"></i> {{ label }}
+      </li>
+    {% endfor %}
+  </ol>
+  {% if report.verification_status == 'pending' %}
+    <div class="small text-muted mt-2">Waiting for an authority to verify this report.</div>
+  {% elif report.verification_status == 'rejected' %}
+    <div class="small text-danger mt-2">This report was rejected during verification.</div>
+  {% endif %}
+</div></div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold">Photos</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="small text-muted mb-1">Before</div>
+            <a href="{{ report.before_image.url }}" target="_blank" rel="noopener">
+              <img src="{{ report.before_image.url }}" alt="Before photo" class="img-fluid rounded border">
+            </a>
+          </div>
+          <div class="col-md-6">
+            <div class="small text-muted mb-1">After</div>
+            {% if report.after_image %}
+              <a href="{{ report.after_image.url }}" target="_blank" rel="noopener">
+                <img src="{{ report.after_image.url }}" alt="After photo" class="img-fluid rounded border">
+              </a>
+            {% else %}
+              <div class="border rounded text-center text-muted p-5 small">
+                {% if report.is_safety %}Not required for safety concerns{% else %}No repair photo yet{% endif %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold">Description</div>
+      <div class="card-body">
+        <p class="mb-0" style="white-space: pre-line;">{{ report.description }}</p>
+      </div>
+    </div>
+
+    {% if report.resolution_note %}
+    <div class="card shadow-sm border-success mb-4">
+      <div class="card-header bg-white fw-semibold text-success">Resolution note</div>
+      <div class="card-body"><p class="mb-0" style="white-space: pre-line;">{{ report.resolution_note }}</p>
+        {% if report.resolved_at %}<div class="small text-muted mt-2">{{ report.resolved_at|date:"d M Y, H:i" }}</div>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    {# ── Member 5: render comments + vote buttons here (Comment / Vote from the interactions app). #}
+    {% block interactions %}{% endblock %}
+
+    {# ── Member 4: render status history / authority action buttons here. #}
+    {% block authority_actions %}{% endblock %}
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold">Details</div>
+      <ul class="list-group list-group-flush small">
+        <li class="list-group-item"><i class="bi bi-tag"></i> <strong>Category:</strong> {{ report.category.name }} ({{ report.category.get_type_display }})</li>
+        <li class="list-group-item"><i class="bi bi-map"></i> <strong>Area:</strong> {{ report.area.name }}</li>
+        <li class="list-group-item"><i class="bi bi-geo-alt"></i> <strong>Location:</strong> {{ report.location_text }}</li>
+        <li class="list-group-item"><i class="bi bi-flag"></i> <strong>Priority score:</strong> {{ report.priority_score|floatformat:1 }}</li>
+        <li class="list-group-item"><i class="bi bi-arrow-repeat"></i> <strong>Last updated:</strong> {{ report.updated_at|timesince }} ago</li>
+      </ul>
+    </div>
+    <div id="detail-map" data-lat="{{ report.latitude|stringformat:'s' }}" data-lng="{{ report.longitude|stringformat:'s' }}"
+         role="region" aria-label="Map showing the report location"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const el = document.getElementById('detail-map');
+  if (!el || typeof L === 'undefined') return;
+  const lat = parseFloat(el.dataset.lat), lng = parseFloat(el.dataset.lng);
+  if (isNaN(lat) || isNaN(lng)) return;
+  const map = L.map(el).setView([lat, lng], 16);
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+    { maxZoom: 19, attribution: 'Tiles &copy; Esri' }
+  ).addTo(map);
+  L.marker([lat, lng]).addTo(map);
+});
+</script>
+{% endblock %}

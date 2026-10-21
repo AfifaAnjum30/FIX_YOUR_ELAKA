@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Report a problem | FixIt Local{% endblock %}
+
+{% block extra_head %}{{ block.super }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<style>#picker-map { height: 320px; border-radius: .5rem; }</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <h1 class="h3 mb-3">Report a problem</h1>
+
+    <div class="alert alert-info small">
+      <i class="bi bi-shield-lock"></i>
+      For <strong>Safety Concern</strong> reports, describe only what you observed (what, where, when).
+      Please don't name or accuse individuals. Safety reports are never shown publicly.
+    </div>
+
+    <form method="post" enctype="multipart/form-data" novalidate class="card shadow-sm card-body">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>
+      {% endif %}
+
+      {% for field in form.visible_fields %}
+        {% if field.name == "latitude" %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Pin the location on the map</label>
+            <div id="picker-map" role="application" aria-label="Map: click to choose the problem location"></div>
+            <button type="button" id="use-my-location" class="btn btn-sm btn-outline-secondary mt-2">
+              <i class="bi bi-crosshair"></i> Use my current location
+            </button>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+        {% elif field.name == "longitude" %}
+            <div class="col-md-6 mb-3">
+              <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+        {% else %}
+          <div class="mb-3">
+            <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i> Submit report</button>
+        <a class="btn btn-outline-secondary" href="{% url 'reports:list' %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'reports/js/location_picker.js' %}"></script>
+{% endblock %}

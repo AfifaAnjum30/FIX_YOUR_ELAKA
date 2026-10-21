@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
 from core.views import HomeView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -12,4 +14,7 @@ urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     # Member 2 Other Pages
     path("", include("core.urls")),
+    path("reports/", include("reports.urls")),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
