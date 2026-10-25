@@ -89,8 +89,28 @@
 
        {% interaction_panel report %}
 
-    {# ── Member 4: render status history / authority action buttons here. #}
-    {% block authority_actions %}{% endblock %}
+        {% if can_manage %}
+    <div class="card shadow-sm mb-4 border-primary">
+      <div class="card-header bg-white fw-semibold">Authority actions</div>
+      <div class="card-body d-flex flex-wrap gap-2">
+        {% if report.verification_status == "pending" %}
+          <a href="{% url 'reports:verify-report' report.pk %}" class="btn btn-success">
+            <i class="bi bi-patch-check"></i> Verify / Reject report
+          </a>
+        {% else %}
+          <a href="{% url 'reports:verify-report' report.pk %}" class="btn btn-outline-secondary btn-sm">
+            Change verification decision
+          </a>
+        {% endif %}
+
+        {% if report.verification_status == "verified" %}
+          <a href="{% url 'reports:update-report-status' report.pk %}" class="btn btn-primary">
+            <i class="bi bi-arrow-repeat"></i> Update status
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
   </div>
 
   <div class="col-lg-5">

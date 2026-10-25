@@ -1,7 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import F, Q
 from django.shortcuts import get_object_or_404, redirect, render
@@ -9,17 +8,10 @@ from django.views.generic import CreateView, DetailView, ListView
 
 from accounts.mixins import CitizenRequiredMixin
 from core.forms import ReportFilterForm
-from .forms import ReportCreateForm, VerificationForm, ReportStatusForm
-from .models import Report, Verification, ReportStatusHistory
-from .permissions import can_manage_report, visible_reports_for
-from accounts.models import AuthorityProfile
-from django.utils import timezone
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 
-from .models import Report, Verification
-from .forms import VerificationForm
+from .forms import ReportCreateForm, ReportStatusForm, VerificationForm
+from .models import Report, ReportStatusHistory, Verification
+from .permissions import can_manage_report, visible_reports_for
 
 
 class ReportListView(ListView):
@@ -113,186 +105,117 @@ class ReportCreateView(CitizenRequiredMixin, CreateView):
         )
         return response
 
-    def get_authority(user):
-        if not user.is_authenticated or user.role != 'authority':
-            return None
-
-        try:
-            profile = user.authority_profile
-        except AuthorityProfile.DoesNotExist:
-            return None
-
-        if profile.approval_status != 'approved':
-            return None
-
-        return profile
-
-    def can_process_report(authority, report):
-        return (
-                authority is not None
-                and authority.assigned_area_id == report.area_id
-        )
-
-    @login_required
-    def verify_report(request, report_id):
-        report = get_object_or_404(Report, pk=report_id)
-        authority = request.get_authority(request.user)
-
-        if not request.can_process_report(authority, report):
-            messages.error(
-                request,
-                "You are not authorized to verify this report."
-            )
-            return redirect('report-list')
-
-        if request.method == 'POST':
-            form = VerificationForm(request.POST)
-
-            if form.is_valid():
-                decision = form.cleaned_data['status']
-
-                with transaction.atomic():
-                    verification, created = Verification.objects.get_or_create(
-                        report=report,
-                        defaults={
-                            'reviewed_by': authority,
-                            'status': decision,
-                            'remarks': form.cleaned_data['remarks'],
-                        }
-                    )
-
-                    if not created:
-                        verification.reviewed_by = authority
-                        verification.status = decision
-                        verification.remarks = form.cleaned_data['remarks']
-                        verification.save()
-
-                    report.verification_status = decision
-                    report.save(update_fields=['verification_status'])
-
-                    if decision == 'verified' and created:
-                        reporter = report.reporter
-
-                        reporter.verified_reports_count += 1
-                        reporter.save(update_fields=['verified_reports_count'])
-
-                        reporter.update_trust_score()
-
-                messages.success(request, 'Verification saved.')
-                return redirect('report-list')
-
-        else:
-            form = VerificationForm()
-
-        return render(
-            request,
-            'reports/verify_report.html',
-            {'form': form, 'report': report}
-        )
-
-@login_required
-def update_report_status(request, report_id, updated_report=None):
-        report = get_object_or_404(Report, pk=report_id)
-        authority = request.get_authority(request.user)
-        updated_report.resolved_at = timezone.now()
-
-        if not request.can_process_report(authority, report):
-            messages.error(
-                request,
-                "You are not authorized to update this report."
-            )
-            return redirect('report-list')
-
-        if report.verification_status != 'verified':
-            messages.error(
-                request,
-                "Verify the report before updating its status."
-            )
-            return redirect('report-list')
-
-        if request.method == 'POST':
-            form = ReportStatusForm(
-                request.POST,
-                request.FILES,
-                instance=report
-            )
-
-            if form.is_valid():
-                old_status = report.operational_status
-
-                with transaction.atomic():
-                    updated_report = form.save(commit=False)
-
-                    try:
-                        updated_report.full_clean()
-                    except ValidationError as error:
-                        form.add_error(None, error)
-                    else:
-                        updated_report.save()
-
-                        if old_status != updated_report.operational_status:
-                            ReportStatusHistory.objects.create(
-                                report=updated_report,
-                                previous_status=old_status,
-                                new_status=updated_report.operational_status,
-                                changed_by=authority,
-                                remarks=updated_report.resolution_note,
-                            )
-
-                            if updated_report.operational_status == 'resolved':
-                                updated_report.resolved_at = (
-                                    __import__('django.utils.timezone',
-                                               fromlist=['now']).now()
-                                )
-                                updated_report.save(
-                                    update_fields=['resolved_at']
-                                )
-
-                        messages.success(
-                            request,
-                            'Report status updated successfully.'
-                        )
-                        return redirect('report-list')
-
-        else:
-            form = ReportStatusForm(instance=report)
-
-        return render(
-            request,
-            'reports/update_status.html',
-            {'form': form, 'report': report}
-        )
+    # ---------------------------------------------------------------------------
+    # Authority actions
+    # ---------------------------------------------------------------------------
 
 
 @login_required
 def verify_report(request, report_id):
-        report = get_object_or_404(Report, pk=report_id)
+    """An approved authority in the report's area verifies or rejects it."""
+    report = get_object_or_404(Report, pk=report_id)
 
-        if request.method == 'POST':
-            form = VerificationForm(request.POST)
+    # can_manage_report: approved authority AND assigned area matches report area
+    if not can_manage_report(request.user, report):
+        messages.error(request, "You are not authorized to verify this report.")
+        return redirect("reports:list")
 
-            if form.is_valid():
-                decision = form.cleaned_data['status']
+    authority = request.user.authority_profile_or_none
 
+    if request.method == "POST":
+        form = VerificationForm(request.POST)
+        if form.is_valid():
+            decision = form.cleaned_data["status"]
+            was_verified = report.verification_status == "verified"
+
+            with transaction.atomic():
                 Verification.objects.update_or_create(
                     report=report,
                     defaults={
-                        'status': decision,
-                        'remarks': form.cleaned_data.get('remarks', ''),
-                    }
+                        "reviewed_by": authority,
+                        "status": decision,
+                        "remarks": form.cleaned_data["remarks"],
+                    },
                 )
-
                 report.verification_status = decision
-                report.save(update_fields=['verification_status'])
+                report.save(update_fields=["verification_status", "updated_at"])
 
-                messages.success(request, 'Verification saved.')
-                return redirect('report-list')
+                # Keep the reporter's trust-score counters in step.
+                reporter_qs = get_user_model().objects.filter(pk=report.reporter_id)
+                if decision == "verified" and not was_verified:
+                    reporter_qs.update(
+                        verified_reports_count=F("verified_reports_count") + 1
+                    )
+                elif was_verified and decision != "verified":
+                    reporter_qs.filter(verified_reports_count__gt=0).update(
+                        verified_reports_count=F("verified_reports_count") - 1
+                    )
 
-        else:
-            form = VerificationForm()
+            report.reporter.refresh_from_db()
+            report.reporter.update_trust_score()
 
-        return render(
-            request,
-            'reports/verify_report.html',
-            {'form': form, 'report': report}
-        )
+            messages.success(request, "Verification saved.")
+            return redirect(report.get_absolute_url())
+    else:
+        form = VerificationForm()
+
+    return render(request, "reports/verify_report.html", {"form": form, "report": report})
+
+
+@login_required
+def update_report_status(request, report_id):
+    """An approved authority in the report's area moves it along its workflow."""
+    report = get_object_or_404(Report, pk=report_id)
+
+    if not can_manage_report(request.user, report):
+        messages.error(request, "You are not authorized to update this report.")
+        return redirect("reports:list")
+
+    if report.verification_status == "pending":
+        messages.error(request, "Verify the report before updating its status.")
+        return redirect(report.get_absolute_url())
+
+    authority = request.user.authority_profile_or_none
+    old_status = report.operational_status  # capture BEFORE the form touches the instance
+
+    if request.method == "POST":
+        form = ReportStatusForm(request.POST, request.FILES, instance=report)
+        if form.is_valid():
+            new_status = form.cleaned_data["operational_status"]
+
+            # A ModelForm changes the instance while validating, so put the old
+            # status back and let the model judge the move (workflow order,
+            # verification rule, mandatory after-photo rule).
+            report.operational_status = old_status
+            error = (
+                None if new_status == old_status else report.transition_error(new_status)
+            )
+
+            if error:
+                form.add_error("operational_status", error)
+            else:
+                with transaction.atomic():
+                    # Save the after photo and note first...
+                    report.save(
+                        update_fields=["after_image", "resolution_note", "updated_at"]
+                    )
+                    # ...then change status (sets resolved_at, sends the signal).
+                    if new_status != old_status:
+                        report.transition_to(
+                            new_status,
+                            user=request.user,
+                            remarks=report.resolution_note,
+                        )
+                        ReportStatusHistory.objects.create(
+                            report=report,
+                            previous_status=old_status,
+                            new_status=new_status,
+                            changed_by=authority,
+                            remarks=report.resolution_note,
+                        )
+                messages.success(request, "Report status updated successfully.")
+                return redirect(report.get_absolute_url())
+    else:
+        form = ReportStatusForm(instance=report)
+
+    return render(request, "reports/update_status.html", {"form": form, "report": report})
