@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+   {% load static interactions_tags %}
 {% block title %}{{ report.title }} | FixIt Local{% endblock %}
 
 {% block extra_head %}{{ block.super }}
@@ -87,8 +87,7 @@
     </div>
     {% endif %}
 
-    {# ── Member 5: render comments + vote buttons here (Comment / Vote from the interactions app). #}
-    {% block interactions %}{% endblock %}
+       {% interaction_panel report %}
 
     {# ── Member 4: render status history / authority action buttons here. #}
     {% block authority_actions %}{% endblock %}

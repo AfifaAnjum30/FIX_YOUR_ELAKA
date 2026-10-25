@@ -15,6 +15,8 @@ urlpatterns = [
     # Member 2 Other Pages
     path("", include("core.urls")),
     path("reports/", include("reports.urls")),
+    path("interactions/", include("interactions.urls")),
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

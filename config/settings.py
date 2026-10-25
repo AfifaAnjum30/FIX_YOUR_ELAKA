@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'accounts',
     "core.apps.CoreConfig",
     'reports',
+    'interactions',
 ]
 
 MIDDLEWARE = [
