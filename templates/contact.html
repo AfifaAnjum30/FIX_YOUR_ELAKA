@@ -1,0 +1,349 @@
+```html
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | Fix Your Elaka</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f6f8;
+            color: #243044;
+            min-height: 100vh;
+        }
+
+        .contact-page {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .contact-container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: 0.9fr 1.1fr;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 45px rgba(20, 40, 60, 0.12);
+        }
+
+        .contact-info {
+            background: #123d35;
+            color: white;
+            padding: 50px 35px;
+        }
+
+        .brand {
+            font-size: 25px;
+            font-weight: bold;
+            margin-bottom: 45px;
+        }
+
+        .brand span {
+            color: #75e0ad;
+        }
+
+        .contact-info h1 {
+            font-size: 34px;
+            line-height: 1.25;
+            margin-bottom: 18px;
+        }
+
+        .contact-info > p {
+            color: #d3e5df;
+            line-height: 1.8;
+            font-size: 15px;
+            margin-bottom: 35px;
+        }
+
+        .info-item {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            margin: 25px 0;
+        }
+
+        .info-icon {
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .info-item h3 {
+            font-size: 15px;
+            margin-bottom: 7px;
+        }
+
+        .info-item p {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #d3e5df;
+        }
+
+        .contact-form {
+            padding: 50px 40px;
+        }
+
+        .contact-form h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .form-subtitle {
+            color: #778292;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 9px;
+            color: #344054;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #dce2e8;
+            border-radius: 9px;
+            font-size: 14px;
+            font-family: inherit;
+            background: #fbfcfd;
+            color: #243044;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #168568;
+            box-shadow: 0 0 0 3px rgba(22, 133, 104, 0.12);
+        }
+
+        .form-group textarea {
+            min-height: 130px;
+            resize: vertical;
+        }
+
+        .send-button {
+            width: 100%;
+            border: none;
+            border-radius: 9px;
+            padding: 15px;
+            background: #168568;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .send-button:hover {
+            background: #106b53;
+            transform: translateY(-1px);
+        }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            background: #e4f7ec;
+            color: #17633f;
+        }
+
+        .error-message {
+            color: #b42318;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 22px;
+            color: #168568;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 700px) {
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+
+            .contact-info,
+            .contact-form {
+                padding: 32px 24px;
+            }
+
+            .brand {
+                margin-bottom: 28px;
+            }
+
+            .contact-info h1 {
+                font-size: 29px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="contact-page">
+        <div class="contact-container">
+
+            <section class="contact-info">
+                <div class="brand">Fix Your <span>Elaka.</span></div>
+
+                <h1>Let's make your area better together.</h1>
+
+                <p>
+                    Have a question, suggestion, or problem to report?
+                    Send us a message. Your voice can help improve
+                    your community.
+                </p>
+
+                <div class="info-item">
+                    <div class="info-icon">✉</div>
+                    <div>
+                        <h3>Email Us</h3>
+                        <p>Send us your questions and suggestions.</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">📍</div>
+                    <div>
+                        <h3>Our Mission</h3>
+                        <p>Building cleaner, safer, better communities.</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">🤝</div>
+                    <div>
+                        <h3>Community First</h3>
+                        <p>Your feedback helps us serve the community.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="contact-form">
+                <h2>Contact Us</h2>
+                <p class="form-subtitle">
+                    Fill out the form below and let us know how we can help.
+                </p>
+
+                {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                            <div class="message">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="error-message">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.name.id_for_label }}">Full Name</label>
+                            {{ form.name }}
+                            {% for error in form.name.errors %}
+                                <p class="error-message">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.email.id_for_label }}">Email Address</label>
+                            {{ form.email }}
+                            {% for error in form.email.errors %}
+                                <p class="error-message">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.subject.id_for_label }}">Subject</label>
+                        {{ form.subject }}
+                        {% for error in form.subject.errors %}
+                            <p class="error-message">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.message.id_for_label }}">Your Message</label>
+                        {{ form.message }}
+                        {% for error in form.message.errors %}
+                            <p class="error-message">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="send-button">
+                        Send Message &nbsp; →
+                    </button>
+                </form>
+
+                <a href="{% url 'home' %}" class="back-link">
+                    ← Back to Home
+                </a>
+            </section>
+
+        </div>
+    </main>
+</body>
+</html>

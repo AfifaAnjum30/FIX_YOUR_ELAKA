@@ -1,0 +1,731 @@
+
+{% load static %}
+
+<style>
+    .fye-footer {
+        --footer-primary: #0f766e;
+        --footer-dark: #183247;
+        --footer-muted: #627d96;
+        --footer-bg: #F5FAFB;
+
+        position: relative;
+        overflow: hidden;
+        background: var(--footer-bg);
+        color: var(--footer-dark);
+        font-family: "Segoe UI", Arial, sans-serif;
+        border-top: 1px solid #e2eeee;
+    }
+
+    .fye-footer *,
+    .fye-footer *::before,
+    .fye-footer *::after {
+        box-sizing: border-box;
+    }
+
+    .fye-footer a {
+        text-decoration: none;
+    }
+
+    .fye-footer-main {
+        position: relative;
+        z-index: 2;
+        max-width: 1400px;
+        margin: auto;
+        padding: 65px 35px 50px;
+        display: grid;
+        grid-template-columns: 1.3fr 0.9fr 1.05fr 1.1fr 1.05fr;
+        gap: 35px;
+    }
+
+    /* BRAND */
+
+    .fye-brand {
+        min-width: 0;
+    }
+
+    .fye-logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--footer-dark);
+        font-size: 25px;
+        font-weight: 850;
+        line-height: 1.15;
+        letter-spacing: -0.8px;
+    }
+
+    .fye-logo span {
+        color: var(--footer-primary);
+    }
+
+    .fye-logo-icon {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        color: white;
+        background: linear-gradient(145deg, #0f766e, #009f91);
+        border-radius: 50% 50% 50% 12%;
+        transform: rotate(-45deg);
+        box-shadow: 0 7px 18px rgba(11, 183, 165, 0.17);
+    }
+
+    .fye-logo-icon svg {
+        width: 25px;
+        height: 25px;
+        transform: rotate(45deg);
+    }
+
+    .fye-tagline {
+        margin: 22px 0 15px;
+        color: #547593;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        line-height: 1.8;
+    }
+
+    .fye-brand-description {
+        max-width: 280px;
+        margin: 0;
+        color: var(--footer-muted);
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    /* SOCIAL LINKS */
+
+    .fye-socials {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .fye-socials a {
+        width: 39px;
+        height: 39px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #e1f7f4;
+        color: #147b79;
+        border: 1px solid #d4f0eb;
+        transition: 0.25s ease;
+    }
+
+    .fye-socials a:hover {
+        background: var(--footer-primary);
+        color: white;
+        transform: translateY(-4px);
+    }
+
+    .fye-socials svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* COLUMN HEADINGS */
+
+    .fye-column {
+        min-width: 0;
+    }
+
+    .fye-column h3 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 5px 0 30px;
+        color: var(--footer-dark);
+        font-size: 17px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .fye-heading-icon {
+        width: 30px;
+        height: 30px;
+        color: var(--footer-primary);
+        flex-shrink: 0;
+    }
+
+    .fye-heading-line {
+        width: 42px;
+        height: 3px;
+        margin-top: -19px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        background: var(--footer-primary);
+    }
+
+    /* FOOTER LINKS */
+
+    .fye-links {
+        display: flex;
+        flex-direction: column;
+        gap: 19px;
+    }
+
+    .fye-links a {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        color: #496780;
+        font-size: 14px;
+        transition: color 0.25s ease;
+    }
+
+    .fye-links a:hover {
+        color: var(--footer-primary);
+    }
+
+    .fye-arrow {
+        color: var(--footer-primary);
+        font-size: 20px;
+        transition: transform 0.25s ease;
+    }
+
+    .fye-links a:hover .fye-arrow {
+        transform: translateX(5px);
+    }
+
+    /* CONTACT */
+
+    .fye-contact-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .fye-contact-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .fye-contact-icon {
+        width: 42px;
+        height: 42px;
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #def7f3;
+        color: #079e92;
+    }
+
+    .fye-contact-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .fye-contact-text {
+        min-width: 0;
+    }
+
+    .fye-contact-text strong {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--footer-dark);
+        font-size: 13px;
+    }
+
+    .fye-contact-text a {
+        display: block;
+        color: var(--footer-muted);
+        font-size: 12px;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+        transition: color 0.25s ease;
+    }
+
+    .fye-contact-text a:hover {
+        color: var(--footer-primary);
+    }
+
+    /* NEWSLETTER */
+
+    .fye-newsletter p {
+        margin: 0 0 22px;
+        color: var(--footer-muted);
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .fye-newsletter form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .fye-email-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 14px;
+        min-height: 47px;
+        border: 1px solid #dbe8ee;
+        border-radius: 30px;
+        background: #ffffff;
+        transition: border-color 0.25s;
+    }
+
+    .fye-email-wrap:focus-within {
+        border-color: var(--footer-primary);
+    }
+
+    .fye-email-wrap svg {
+        width: 19px;
+        height: 19px;
+        flex-shrink: 0;
+        color: var(--footer-primary);
+    }
+
+    .fye-email-wrap input {
+        width: 100%;
+        min-width: 0;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--footer-dark);
+        font-size: 13px;
+    }
+
+    .fye-email-wrap input::placeholder {
+        color: #8297a9;
+    }
+
+    .fye-subscribe {
+        min-height: 47px;
+        border: none;
+        border-radius: 30px;
+        background: #0f766e;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 750;
+        cursor: pointer;
+        transition: 0.25s ease;
+    }
+
+    .fye-subscribe:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 7px 18px rgba(15, 118, 110, 1.0);
+    }
+
+    /* MISSION NOTE */
+
+    .fye-mission-note {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 25px;
+        padding: 15px;
+        border: 1px solid #d7f1ed;
+        border-radius: 14px;
+        background: #e8faf7;
+        color: #178e83;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .fye-mission-note svg {
+        width: 26px;
+        height: 26px;
+        flex-shrink: 0;
+        color: var(--footer-primary);
+    }
+
+    /* DECORATIVE NEIGHBORHOOD */
+
+    .fye-landscape {
+        position: relative;
+        height: 100px;
+        margin-top: -8px;
+        overflow: hidden;
+        pointer-events: none;
+        background:
+            radial-gradient(ellipse at 15% 100%, #d9f6ec 0%, transparent 42%),
+            radial-gradient(ellipse at 85% 100%, #dff4fa 0%, transparent 45%);
+    }
+
+    .fye-hill {
+        position: absolute;
+        bottom: -45px;
+        width: 58%;
+        height: 95px;
+        border-radius: 50% 50% 0 0;
+        background: #d9f3e9;
+    }
+
+    .fye-hill-left {
+        left: -7%;
+        transform: rotate(-4deg);
+    }
+
+    .fye-hill-right {
+        right: -8%;
+        height: 120px;
+        background: #dff2f8;
+        transform: rotate(3deg);
+    }
+
+    .fye-city {
+        position: absolute;
+        bottom: 16px;
+        right: 14%;
+        height: 60px;
+        display: flex;
+        align-items: flex-end;
+        gap: 7px;
+        opacity: 0.75;
+    }
+
+    .fye-building {
+        width: 23px;
+        border: 1px solid #a9dfe5;
+        background: #c0e9ef;
+        border-radius: 3px 3px 0 0;
+    }
+
+    .fye-building:nth-child(1) { height: 30px; }
+    .fye-building:nth-child(2) { height: 46px; }
+    .fye-building:nth-child(3) { height: 37px; }
+    .fye-building:nth-child(4) { height: 60px; }
+    .fye-building:nth-child(5) { height: 43px; }
+    .fye-building:nth-child(6) { height: 26px; }
+
+    .fye-tree {
+        position: absolute;
+        bottom: 18px;
+        width: 24px;
+        height: 32px;
+        border-radius: 50% 50% 45% 45%;
+        background: #9bd9bd;
+        box-shadow: 0 18px 0 -10px #75c6a5;
+    }
+
+    .fye-tree::after {
+        content: "";
+        position: absolute;
+        width: 3px;
+        height: 20px;
+        background: #80bba4;
+        left: 11px;
+        top: 25px;
+    }
+
+    .fye-tree-one { left: 7%; }
+    .fye-tree-two { left: 12%; transform: scale(.8); }
+    .fye-tree-three { right: 8%; transform: scale(1.2); }
+    .fye-tree-four { right: 4%; transform: scale(.8); }
+
+    /* COPYRIGHT */
+
+    .fye-footer-bottom {
+        position: relative;
+        z-index: 2;
+        border-top: 1px solid #dfebef;
+        background: rgba(255, 255, 255, 0.75);
+    }
+
+    .fye-footer-bottom-inner {
+        max-width: 1400px;
+        min-height: 75px;
+        margin: auto;
+        padding: 18px 35px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        color: var(--footer-muted);
+        font-size: 12px;
+    }
+
+    .fye-copyright {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .fye-dot {
+        color: var(--footer-primary);
+        font-size: 20px;
+    }
+
+    .fye-bottom-slogan {
+        color: #58758b;
+    }
+
+    .fye-bottom-slogan strong {
+        color: var(--footer-primary);
+    }
+
+    /* RESPONSIVE */
+
+    @media (max-width: 1150px) {
+        .fye-footer-main {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 45px 30px;
+        }
+    }
+
+    @media (max-width: 720px) {
+        .fye-footer-main {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            padding: 45px 24px 30px;
+            gap: 35px 24px;
+        }
+
+        .fye-brand {
+            grid-column: 1 / -1;
+        }
+
+        .fye-brand-description {
+            max-width: 420px;
+        }
+
+        .fye-landscape {
+            height: 75px;
+        }
+
+        .fye-footer-bottom-inner {
+            padding: 20px 24px;
+        }
+    }
+
+    @media (max-width: 440px) {
+        .fye-footer-main {
+            grid-template-columns: 1fr;
+            gap: 32px;
+            padding: 38px 22px 28px;
+        }
+
+        .fye-brand {
+            grid-column: auto;
+        }
+
+        .fye-column h3 {
+            margin-bottom: 22px;
+        }
+
+        .fye-links {
+            gap: 15px;
+        }
+
+        .fye-footer-bottom-inner {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<footer class="fye-footer">
+
+    <div class="fye-footer-main">
+
+        <!-- BRAND -->
+        <div class="fye-brand">
+            <a href="{% url 'home' %}" class="fye-logo">
+                <span class="fye-logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2">
+                        <path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/>
+                        <path d="M7.5 13h3l1.5-4 1.5 6 1.5-3h2"/>
+                    </svg>
+                </span>
+                <span style="color:var(--footer-dark)">
+                    FIX YOUR<br><span>ELAKA.</span>
+                </span>
+            </a>
+
+            <p class="fye-tagline">
+                Better Neighborhoods.<br>
+                Stronger Communities.
+            </p>
+
+            <p class="fye-brand-description">
+                A community-driven platform for reporting local problems,
+                tracking progress, and building a cleaner, safer, and
+                better neighborhood for everyone.
+            </p>
+
+            <div class="fye-socials">
+                <a href="mailto:dsrabon254@gmail.com" aria-label="Email">
+                    <svg viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="5" width="18" height="14" rx="2"/>
+                        <path d="m4 7 8 6 8-6"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- QUICK LINKS -->
+        <div class="fye-column">
+            <h3>
+                <svg class="fye-heading-icon" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m3 10 9-7 9 7"/>
+                    <path d="M5 9v12h14V9M9 21v-7h6v7"/>
+                </svg>
+                Quick Links
+            </h3>
+            <div class="fye-heading-line"></div>
+
+            <div class="fye-links">
+                <a href="{% url 'home' %}">Home <span class="fye-arrow">→</span></a>
+                <a href="#features">Features <span class="fye-arrow">→</span></a>
+                <a href="{% url 'contact' %}">Contact Us <span class="fye-arrow">→</span></a>
+            </div>
+        </div>
+
+        <!-- COMMUNITY -->
+        <div class="fye-column">
+            <h3>
+                <svg class="fye-heading-icon" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="8" r="3"/>
+                    <path d="M3 20v-2a6 6 0 0 1 12 0v2"/>
+                    <path d="M16 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 4v2"/>
+                </svg>
+                Community
+            </h3>
+            <div class="fye-heading-line"></div>
+
+            <div class="fye-links">
+                <a href="/reports">Community Reports <span class="fye-arrow">→</span></a>
+                <a href="/areas/">Explore Areas <span class="fye-arrow">→</span></a>
+                <a href="{% if user.is_authenticated %}{% url 'accounts:dashboard' %}{% else %}{% url 'accounts:login' %}{% endif %}">My Account <span class="fye-arrow">→</span></a>
+                <a href="{% url 'faq' %}">FAQ<span class="fye-arrow">→</span></a>
+            </div>
+        </div>
+
+        <!-- CONTACT -->
+        <div class="fye-column">
+            <h3>
+                <svg class="fye-heading-icon" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                    <path d="m3 6 9 7 9-7"/>
+                </svg>
+                Contact Us
+            </h3>
+            <div class="fye-heading-line"></div>
+
+            <div class="fye-contact-list">
+                <div class="fye-contact-item">
+                    <div class="fye-contact-icon">
+                        <svg viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="5" width="18" height="14" rx="2"/>
+                            <path d="m4 7 8 6 8-6"/>
+                        </svg>
+                    </div>
+                    <div class="fye-contact-text">
+                        <strong>Email</strong>
+                        <a href="mailto:dsrabon254@gmail.com">
+                            dsrabon254@gmail.com
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fye-mission-note">
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 21V11"/>
+                    <path d="M12 13C4 13 3 7 3 7s7-2 9 6"/>
+                    <path d="M12 10c0-7 8-8 8-8s1 8-8 11"/>
+                    <path d="M12 17c4-5 9-3 9-3s-1 6-9 7"/>
+                </svg>
+                <span>Together we can make a difference.</span>
+            </div>
+        </div>
+
+        <!-- NEWSLETTER -->
+        <div class="fye-column fye-newsletter">
+            <h3>
+                <svg class="fye-heading-icon" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m22 2-7 20-4-9-9-4Z"/>
+                    <path d="M22 2 11 13"/>
+                </svg>
+                Stay Updated
+            </h3>
+            <div class="fye-heading-line"></div>
+
+            <p>
+                Get the latest updates, new features, and community
+                highlights.
+            </p>
+
+            <!-- Visual form only; connect a Django view to process subscriptions. -->
+            <form action="#" method="post">
+                {% csrf_token %}
+                <label class="fye-email-wrap">
+                    <svg viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="5" width="18" height="14" rx="2"/>
+                        <path d="m4 7 8 6 8-6"/>
+                    </svg>
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="Enter your email"
+                        aria-label="Your email address"
+                        required
+                    >
+                </label>
+
+                <button type="submit" class="fye-subscribe">
+                    Subscribe &nbsp; →
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- DECORATIVE NEIGHBORHOOD -->
+    <div class="fye-landscape" aria-hidden="true">
+        <div class="fye-hill fye-hill-left"></div>
+        <div class="fye-hill fye-hill-right"></div>
+
+        <div class="fye-city">
+            <div class="fye-building"></div>
+            <div class="fye-building"></div>
+            <div class="fye-building"></div>
+            <div class="fye-building"></div>
+            <div class="fye-building"></div>
+            <div class="fye-building"></div>
+        </div>
+
+        <div class="fye-tree fye-tree-one"></div>
+        <div class="fye-tree fye-tree-two"></div>
+        <div class="fye-tree fye-tree-three"></div>
+        <div class="fye-tree fye-tree-four"></div>
+    </div>
+
+    <!-- COPYRIGHT BAR -->
+    <div class="fye-footer-bottom">
+        <div class="fye-footer-bottom-inner">
+            <div class="fye-copyright">
+                <span>
+                    &copy; {% now "Y" %} Fix Your Elaka. All rights reserved.
+                </span>
+                <span class="fye-dot">•</span>
+                <span>Made for better communities ♥</span>
+            </div>
+
+            <div class="fye-bottom-slogan">
+                Clean &nbsp;·&nbsp; Safe &nbsp;·&nbsp; Green
+                &nbsp;·&nbsp; <strong>Together</strong>
+            </div>
+        </div>
+    </div>
+
+</footer>
