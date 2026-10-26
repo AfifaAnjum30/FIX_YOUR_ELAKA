@@ -1,4 +1,5 @@
 from django.contrib import admin
+from core import views
 from django.urls import include, path
 from django.views.generic import TemplateView
 from core.views import HomeView
@@ -16,6 +17,8 @@ urlpatterns = [
     path("", include("core.urls")),
     path("reports/", include("reports.urls")),
     path("interactions/", include("interactions.urls")),
+    path("faq/",TemplateView.as_view(template_name="faq.html"),name="faq"),
+    path("contact/", views.contact_view, name="contact"),
 
 ]
 if settings.DEBUG:
