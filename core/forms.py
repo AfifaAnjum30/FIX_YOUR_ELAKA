@@ -1,5 +1,6 @@
 from django import forms
 from .models import Area, Category
+from .models import ContactMessage
 
 class ReportFilterForm(forms.Form):
     q = forms.CharField(required=False, max_length=100, label='Search', widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Search report titles'}))
@@ -11,3 +12,8 @@ class ReportFilterForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields['area'].queryset = Area.objects.all()
         self.fields['category'].queryset = Category.objects.all()
+
+class ContactForm(forms.ModelForm):
+    class Meta:
+        model = ContactMessage
+        fields = ["name", "email", "subject", "message"]
