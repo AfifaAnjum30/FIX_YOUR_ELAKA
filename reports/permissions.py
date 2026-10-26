@@ -12,19 +12,26 @@ def _authority_area_name(user):
     return name or None
 
 
+
 def visible_reports_for(user):
     qs = Report.objects.select_related("area", "category", "reporter")
 
     if user.is_authenticated and user.is_platform_admin:
         return qs
 
+    # Show verified, non-safety reports publicly.
     condition = Q(verification_status="verified") & ~Q(category__type="safety")
+
     if user.is_authenticated:
-        condition |= Q(reporter=user)
+        # Allow members to see reports submitted by everyone.
+        condition |= Q(reporter__isnull=False)
+
+        # Preserve authority access to reports in their assigned area.
         area_name = _authority_area_name(user)
         if area_name:
             condition |= Q(area__name__iexact=area_name)
-    return qs.filter(condition)
+
+    return qs.filter(condition).distinct()
 
 
 def reports_in_authority_area(user):
