@@ -16,6 +16,42 @@ document.addEventListener('DOMContentLoaded', () => {
     { maxZoom: 19, attribution: 'Tiles &copy; Esri' }
   ).addTo(map);
 
+  const locationTextInput = document.getElementById("id_location_text");
+
+  async function updateLocationText(lat, lng) {
+      if (!locationTextInput) return;
+
+      locationTextInput.value = "Finding location...";
+
+      try {
+          const url = new URL(
+              "https://nominatim.openstreetmap.org/reverse"
+          );
+
+          url.searchParams.set("format", "jsonv2");
+          url.searchParams.set("lat", lat);
+          url.searchParams.set("lon", lng);
+          url.searchParams.set("zoom", "18");
+          url.searchParams.set("addressdetails", "1");
+
+          const response = await fetch(url);
+
+          if (!response.ok) {
+              throw new Error("Location lookup failed");
+          }
+
+          const data = await response.json();
+
+          locationTextInput.value =
+              data.display_name ||
+              `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+
+      } catch (error) {
+          locationTextInput.value =
+            ` ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      }
+  }
+
   let marker = hasStart ? L.marker([startLat, startLng]).addTo(map) : null;
 
   function setPoint(lat, lng, pan) {
@@ -23,7 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
     lngInput.value = lng.toFixed(6);
     if (marker) marker.setLatLng([lat, lng]); else marker = L.marker([lat, lng]).addTo(map);
     if (pan) map.setView([lat, lng], 16);
+    updateLocationText(lat, lng);
   }
+  // updateLocationText(lat, lng);
 
   map.on('click', (e) => setPoint(e.latlng.lat, e.latlng.lng, false));
 
