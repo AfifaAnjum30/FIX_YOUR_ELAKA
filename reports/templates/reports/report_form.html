@@ -1,72 +1,257 @@
+
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Report a problem | Fixyour elaka{% endblock %}
 
-{% block extra_head %}{{ block.super }}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-<style>#picker-map { height: 320px; border-radius: .5rem; }</style>
+{% block title %}Report a Problem | Fix Your Elaka{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet"
+      href="{% static 'reports/css/report-form.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-8">
-    <h1 class="h3 mb-3">Report a problem</h1>
+<div class="report-page">
 
-    <div class="alert alert-info small">
-      <i class="bi bi-shield-lock"></i>
-      For <strong>Safety Concern</strong> reports, describe only what you observed (what, where, when).
-      Please don't name or accuse individuals. Safety reports are never shown publicly.
+    <div class="report-heading">
+        <div class="report-heading-icon">
+            <i class="bi bi-megaphone"></i>
+        </div>
+        <div>
+            <div class="report-eyebrow">CITIZEN REPORTING</div>
+            <h1>Make your neighborhood better.</h1>
+            <p>Report a local issue in just a few minutes.</p>
+        </div>
     </div>
 
-    <form method="post" enctype="multipart/form-data" novalidate class="card shadow-sm card-body">
-      {% csrf_token %}
-      {% if form.non_field_errors %}
-        <div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>
-      {% endif %}
+    <form method="post"
+          enctype="multipart/form-data"
+          id="report-form"
+          novalidate>
 
-      {% for field in form.visible_fields %}
-        {% if field.name == "latitude" %}
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Pin the location on the map</label>
-            <div id="picker-map" role="application" aria-label="Map: click to choose the problem location"></div>
-            <button type="button" id="use-my-location" class="btn btn-sm btn-outline-secondary mt-2">
-              <i class="bi bi-crosshair"></i> Use my current location
-            </button>
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
-              {{ field }}
-              {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-            </div>
-        {% elif field.name == "longitude" %}
-            <div class="col-md-6 mb-3">
-              <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
-              {{ field }}
-              {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-            </div>
-          </div>
-        {% else %}
-          <div class="mb-3">
-            <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
-            {{ field }}
-            {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-          </div>
+        {% csrf_token %}
+
+        {% for hidden in form.hidden_fields %}
+            {{ hidden }}
+        {% endfor %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ form.non_field_errors }}
+        </div>
         {% endif %}
-      {% endfor %}
 
-      <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i> Submit report</button>
-        <a class="btn btn-outline-secondary" href="{% url 'reports:list' %}">Cancel</a>
-      </div>
+        <div class="report-layout">
+
+            <!-- LEFT: ISSUE DETAILS -->
+            <section class="report-panel">
+
+                <div class="panel-heading">
+                    <span class="panel-icon">▤</span>
+                    <div>
+                        <h2>Issue details</h2>
+                        <p>Tell us about the problem</p>
+                    </div>
+                </div>
+
+                <div class="report-field">
+                    <label for="{{ form.title.id_for_label }}">
+                        What's the problem?
+                        <span class="required-mark">*</span>
+                    </label>
+                    {{ form.title }}
+                    {% for error in form.title.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="report-field">
+                    <label for="{{ form.category.id_for_label }}">
+                        Category
+                        <span class="required-mark">*</span>
+                    </label>
+                    {{ form.category }}
+                    {% for error in form.category.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="report-field">
+                    <label for="{{ form.description.id_for_label }}">
+                        Description
+                        <span class="required-mark">*</span>
+                    </label>
+                    {{ form.description }}
+                    <p class="field-hint">
+                        Describe what happened and what needs attention.
+                    </p>
+                    {% for error in form.description.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="safety-notice"
+                     id="safety-notice"
+                     role="note"
+                     hidden>
+                    <span class="safety-icon">ⓘ</span>
+                    <p>
+                        <strong>Safety Concern privacy notice:</strong>
+                        Describe only what you observed (what, where,
+                        and when). Do not name or accuse individuals.
+                        Safety reports are never shown publicly.
+                    </p>
+                </div>
+
+                <div class="report-field">
+                    <label for="{{ form.before_image.id_for_label }}">
+                        Evidence photo
+                    </label>
+
+                    <div class="photo-upload" id="photo-upload">
+                        <div class="upload-illustration">▧</div>
+                        <strong>Click to upload a photo</strong>
+                        <span>JPG, PNG or another supported image</span>
+                        <span class="upload-filename"
+                              id="upload-filename"></span>
+                    </div>
+
+                    <div class="photo-input">
+                        {{ form.before_image }}
+                    </div>
+
+                    <div class="photo-preview" id="photo-preview" hidden>
+                        <img id="photo-preview-image"
+                             alt="Selected report photo preview">
+                        <button type="button"
+                                id="remove-photo"
+                                class="remove-photo">
+                            Remove photo
+                        </button>
+                    </div>
+
+                    {% for error in form.before_image.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- RIGHT: LOCATION -->
+            <section class="report-panel">
+
+                <div class="panel-heading">
+                    <span class="panel-icon">⌖</span>
+                    <div>
+                        <h2>Location</h2>
+                        <p>Show us where the issue is</p>
+                    </div>
+                </div>
+
+                <div class="report-field">
+                    <label for="{{ form.area.id_for_label }}">
+                        Area
+                        <span class="required-mark">*</span>
+                    </label>
+                    {{ form.area }}
+                    {% for error in form.area.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="report-field">
+                    <label for="{{ form.location_text.id_for_label }}">
+                        Street or landmark
+                    </label>
+                    {{ form.location_text }}
+                    <p class="field-hint">
+                        Example: Road 5, near the park
+                    </p>
+                    {% for error in form.location_text.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="report-field">
+                    <label>Pin the exact problem location</label>
+
+                    <div class="map-container">
+                        <div id="picker-map"></div>
+
+                        <div class="map-caption">
+                            <span>⌖</span>
+                            Click on the map to select a location
+                        </div>
+                    </div>
+
+                    <button type="button"
+                            id="use-my-location"
+                            class="location-button">
+                        <span>◎</span>
+                        Use my location
+                    </button>
+
+                    <div class="coordinates-fields">
+                        <div>
+                            <label for="{{ form.latitude.id_for_label }}">
+                                Latitude
+                            </label>
+                            {{ form.latitude }}
+                            {% for error in form.latitude.errors %}
+                                <p class="field-error">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <label for="{{ form.longitude.id_for_label }}">
+                                Longitude
+                            </label>
+                            {{ form.longitude }}
+                            {% for error in form.longitude.errors %}
+                                <p class="field-error">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="location-tip">
+                    <span>ⓘ</span>
+                    <p>
+                        Accurate locations help authorities find
+                        and address issues more effectively.
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <!-- SUBMISSION SECTION -->
+        <div class="report-submit-panel">
+            <div class="submit-message">
+                <span class="submit-shield">♢</span>
+                <div>
+                    <strong>Your report matters</strong>
+                    <p>
+                        Your submission helps make your
+                        community safer and better.
+                    </p>
+                </div>
+            </div>
+
+            <button type="submit"
+                    id="submit-report"
+                    class="submit-report-button">
+                <span id="submit-label">Submit Report</span>
+                <span aria-hidden="true">→</span>
+            </button>
+        </div>
+
     </form>
-  </div>
 </div>
 {% endblock %}
 
-{% block extra_js %}{{ block.super }}
+{% block extra_js %}
+{{ block.super }}
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="{% static 'reports/js/location_picker.js' %}"></script>
-<script src="{% static 'reports/js/area-suggest.js' %}" defer></script>
+<script src="{% static 'reports/js/report-form-ui.js' %}" defer></script>
 {% endblock %}
