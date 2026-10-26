@@ -8,4 +8,5 @@ urlpatterns = [
     path('categories/', views.CategoryListView.as_view(), name='categories'),
     path('map/', views.MapView.as_view(), name='map'),
     path('map/data/', views.map_data, name='map_data'),
+
 ]

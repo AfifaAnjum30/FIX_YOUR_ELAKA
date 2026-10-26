@@ -1,9 +1,11 @@
 from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from django.views.generic import TemplateView, ListView
 from .forms import ReportFilterForm
 from .models import Area, Category
 from .services import public_reports
-
+from django.contrib import messages
+from .forms import ContactForm
 
 class HomeView(TemplateView):
     template_name = 'core/home.html'
@@ -57,3 +59,19 @@ def map_data(request):
                            'category': report.category.name, 'status': report.get_operational_status_display()},
         })
     return JsonResponse({'type': 'FeatureCollection', 'features': features})
+
+
+
+
+def contact_view(request):
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your message has been sent successfully!")
+            return redirect("contact")
+    else:
+        form = ContactForm()
+
+    return render(request, "contact.html", {"form": form})
