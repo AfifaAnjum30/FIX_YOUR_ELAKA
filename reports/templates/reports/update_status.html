@@ -1,15 +1,92 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Update Report Status</title>
-</head>
-<body>
-    <h2>Update Status: {{ report.title }}</h2>
+{% extends 'base.html' %}
+{% load static %}
 
-    <form method="POST" enctype="multipart/form-data">
+{% block title %}Update Report Status | Fix Your Elaka{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'reports/css/update-status.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="status-page">
+  <div class="status-page-heading">
+    <div>
+      <div class="status-eyebrow"><i class="bi bi-activity"></i> REPORT MANAGEMENT</div>
+      <h1>Update Report Status</h1>
+      <p>Track progress, add evidence, and keep the community informed.</p>
+    </div>
+    <a href="{% url 'reports:detail' report.pk %}" class="status-back"><i class="bi bi-arrow-left"></i> Back to report</a>
+  </div>
+
+  <div class="status-layout">
+    <section class="status-main-card">
+      <div class="status-card-header">
+        <span class="status-header-icon"><i class="bi bi-clipboard-check"></i></span>
+        <div><h2>Progress update</h2><p>Fill in the details below to update this report.</p></div>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" id="status-update-form" novalidate>
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Update Status</button>
-    </form>
-</body>
-</html>
+        {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+
+        <div class="status-field">
+          <label for="{{ form.operational_status.id_for_label }}"><i class="bi bi-signpost-split"></i> Operational status <span class="required-mark">*</span></label>
+          <p class="status-field-help">Select the current stage of work on this issue.</p>
+          {{ form.operational_status }}
+          {% for error in form.operational_status.errors %}<div class="status-error">{{ error }}</div>{% endfor %}
+          {% if form.operational_status.help_text %}<small class="status-hint">{{ form.operational_status.help_text }}</small>{% endif %}
+        </div>
+
+        <div class="status-field">
+          <label for="{{ form.after_image.id_for_label }}"><i class="bi bi-image"></i> After image</label>
+          <p class="status-field-help">Upload a photo showing the progress or completed work.</p>
+          <div class="status-upload-box" id="status-upload-box">
+            <div class="status-upload-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+            <strong>Attach a progress photo</strong>
+            <span>Choose an image from your device</span>
+            <div class="status-file-input">{{ form.after_image }}</div>
+            <div class="status-file-name" id="status-file-name" aria-live="polite"></div>
+            <img id="status-image-preview" alt="Selected progress image preview" hidden>
+          </div>
+          {% if report.after_image %}<p class="status-current-image">Current image: <a href="{{ report.after_image.url }}" target="_blank" rel="noopener">View uploaded photo</a></p>{% endif %}
+          {% for error in form.after_image.errors %}<div class="status-error">{{ error }}</div>{% endfor %}
+          {% if form.after_image.help_text %}<small class="status-hint">{{ form.after_image.help_text }}</small>{% endif %}
+        </div>
+
+        <div class="status-field">
+          <label for="{{ form.resolution_note.id_for_label }}"><i class="bi bi-chat-left-text"></i> Resolution note</label>
+          <p class="status-field-help">Explain the action taken, progress made, or any remaining work.</p>
+          {{ form.resolution_note }}
+          {% for error in form.resolution_note.errors %}<div class="status-error">{{ error }}</div>{% endfor %}
+          {% if form.resolution_note.help_text %}<small class="status-hint">{{ form.resolution_note.help_text }}</small>{% endif %}
+        </div>
+
+        <div class="status-actions">
+          <a href="{% url 'reports:detail' report.pk %}" class="status-cancel">Cancel</a>
+          <button type="submit" class="status-submit" id="status-submit"><i class="bi bi-check2-circle"></i> Update Status</button>
+        </div>
+      </form>
+    </section>
+
+    <aside class="status-side">
+      <div class="status-info-card">
+        <span class="status-info-label">REPORT OVERVIEW</span>
+        <h2>{{ report.title }}</h2>
+        <div class="status-info-line"><span>Report ID</span><strong>#{{ report.pk }}</strong></div>
+        <div class="status-info-line"><span>Current status</span><strong>{{ report.get_operational_status_display }}</strong></div>
+        {% if report.area %}<div class="status-info-line"><span>Area</span><strong>{{ report.area }}</strong></div>{% endif %}
+      </div>
+      <div class="status-guidance-card">
+        <i class="bi bi-shield-check"></i>
+        <div><strong>Keep updates accurate</strong><p>Clear notes and photos help citizens understand the progress of their reports.</p></div>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'reports/js/update-status.js' %}" defer></script>
+{% endblock %}
