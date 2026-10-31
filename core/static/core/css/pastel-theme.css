@@ -1,0 +1,226 @@
+/* ==========================================================================
+   FIX YOUR ELAKA - Global pastel gradient theme
+   Loaded on every page (base.html + contact.html).
+   Sections:
+     1. Palette & design tokens
+     2. Global gradient background
+     3. Text, links & buttons
+     4. Navbar            (delete this section to keep the original blue navbar)
+     5. Cards, lists & tables
+     6. Page-specific panels (reports, FAQ)
+     7. Home hero         (delete this section to keep the original green hero)
+     8. Footer
+   ========================================================================== */
+
+
+/* 1. PALETTE & DESIGN TOKENS ------------------------------------------- */
+:root {
+  /* Exact palette */
+  --pastel-sand:    #F9EAE1;
+  --pastel-blush:   #F5C3B8;
+  --pastel-apricot: #F2BA91;
+  --pastel-yellow:  #F9E4A9;
+  --pastel-sage:    #C2DDC5;
+  --pastel-sky:     #BDD1E6;
+
+  /* Same colours as RGB channels, so we can set transparency per layer */
+  --pastel-sand-rgb:    249, 234, 225;
+  --pastel-blush-rgb:   245, 195, 184;
+  --pastel-apricot-rgb: 242, 186, 145;
+  --pastel-yellow-rgb:  249, 228, 169;
+  --pastel-sage-rgb:    194, 221, 197;
+  --pastel-sky-rgb:     189, 209, 230;
+
+  /* Text (all pass WCAG AA on the pastel background) */
+  --pastel-text:       #4A4A4A;
+   --pastel-text-muted: #555555;
+  --pastel-accent:     #43596d;   /* deep muted blue for links / headings */
+
+  /* Translucent surfaces (cards, panels) - tinted, not glassy */
+  --pastel-surface:        rgba(255, 255, 255, 0.72);
+  --pastel-surface-soft:   rgba(255, 255, 255, 0.50);
+  --pastel-border:         rgba(122, 98, 84, 0.16);
+  --pastel-shadow:         0 10px 30px rgba(120, 90, 70, 0.08);
+
+  /* Re-point Bootstrap + existing ink-wash variables to the new palette */
+  --bs-body-bg:          var(--pastel-sand);
+  --bs-body-color:       var(--pastel-text);
+  --bs-secondary-color:  var(--pastel-text-muted);   /* .text-muted */
+  --bs-border-color:     var(--pastel-border);
+  --ink-ivory:           var(--pastel-sand);
+}
+
+
+/* 2. GLOBAL GRADIENT BACKGROUND ---------------------------------------- */
+/* Fallback colour behind everything */
+html {
+  background-color: var(--pastel-sand);
+}
+
+/* Let the gradient show through the body on every page */
+body.pastel-body {
+  background: transparent;
+  color: var(--pastel-text);
+}
+
+/* The gradient lives on a fixed layer covering the viewport.
+   It stays put while content scrolls, so there are no seams, repeats
+   or colour jumps between sections or pages. */
+body.pastel-body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    /* large overlapping colour fields that melt into each other */
+    radial-gradient(ellipse 80% 110% at   0%  35%, rgba(var(--pastel-sky-rgb),     0.90), transparent 100%),
+    radial-gradient(ellipse 60%  80% at  55%   0%, rgba(var(--pastel-blush-rgb),   0.85), transparent 100%),
+    radial-gradient(ellipse 55%  90% at 100%  45%, rgba(var(--pastel-apricot-rgb), 0.80), transparent 100%),
+    radial-gradient(ellipse 65%  60% at  40% 105%, rgba(var(--pastel-sage-rgb),    0.88), transparent 100%),
+    radial-gradient(ellipse 40%  45% at  80%  98%, rgba(var(--pastel-yellow-rgb),  0.65), transparent 100%),
+    /* warm sand underneath */
+    linear-gradient(var(--pastel-sand), var(--pastel-sand));
+}
+
+
+/* 3. TEXT, LINKS & BUTTONS --------------------------------------------- */
+.pastel-body .text-primary {
+  color: var(--pastel-accent) !important;
+}
+
+/* Slightly deeper blue so white button text meets AA contrast (5:1) */
+.pastel-body .btn-primary {
+  --bs-btn-bg: #5A6F84;
+  --bs-btn-border-color: #5A6F84;
+  --bs-btn-hover-bg: #43596d;
+  --bs-btn-hover-border-color: #43596d;
+  --bs-btn-active-bg: #43596d;
+  --bs-btn-active-border-color: #43596d;
+  --bs-btn-disabled-bg: #5A6F84;
+  --bs-btn-disabled-border-color: #5A6F84;
+}
+
+.pastel-body .btn-outline-primary {
+  --bs-btn-color: #43596d;
+  --bs-btn-border-color: #5A6F84;
+  --bs-btn-hover-bg: #5A6F84;
+  --bs-btn-hover-border-color: #5A6F84;
+  --bs-btn-active-bg: #43596d;
+  --bs-btn-active-border-color: #43596d;
+}
+
+
+/* 4. NAVBAR ------------------------------------------------------------ */
+.pastel-body .navbar.bg-primary {
+  background-color: rgba(var(--pastel-sand-rgb), 0.82) !important;
+  border-bottom: 1px solid var(--pastel-border);
+
+  --bs-navbar-color:               rgba(74, 74, 74, 0.88);
+  --bs-navbar-hover-color:         #2b2b2b;
+  --bs-navbar-active-color:        #2b2b2b;
+  --bs-navbar-disabled-color:      rgba(74, 74, 74, 0.45);
+  --bs-navbar-brand-color:         #3a3a3a;
+  --bs-navbar-brand-hover-color:   #2b2b2b;
+  --bs-navbar-toggler-border-color: rgba(74, 74, 74, 0.30);
+  --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2874, 74, 74, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.pastel-body .navbar .navbar-brand .bi {
+  color: #c97f6b;                 /* muted blush-apricot accent for the pin icon */
+}
+
+.pastel-body .navbar .dropdown-menu {
+  border: 1px solid var(--pastel-border);
+  box-shadow: var(--pastel-shadow);
+}
+
+
+/* 5. CARDS, LISTS & TABLES --------------------------------------------- */
+.pastel-body .card {
+  --bs-card-bg: var(--pastel-surface);
+  --bs-card-border-color: var(--pastel-border);
+  --bs-card-cap-bg: var(--pastel-surface-soft);
+}
+
+/* Bootstrap's .bg-white is !important, so it needs !important to be tinted */
+.pastel-body .bg-white {
+  background-color: var(--pastel-surface) !important;
+}
+.pastel-body .card-header.bg-white,
+.pastel-body .card-footer.bg-white {
+  background-color: var(--pastel-surface-soft) !important;
+}
+
+.pastel-body .list-group {
+  --bs-list-group-bg: transparent;
+  --bs-list-group-border-color: var(--pastel-border);
+}
+
+.pastel-body .table {
+  --bs-table-bg: transparent;
+  --bs-table-border-color: var(--pastel-border);
+}
+.pastel-body .table-light {
+  --bs-table-bg: var(--pastel-surface-soft);
+}
+
+
+/* 6. PAGE-SPECIFIC PANELS ---------------------------------------------- */
+/* Report form / verify report / update status panels, and FAQ items */
+body.pastel-body :is(
+  .report-panel,
+  .report-submit-panel,
+  .verify-main-card,
+  .verify-info-card,
+  .status-main-card,
+  .status-info-card,
+  .faq-item
+) {
+  background: var(--pastel-surface);
+  border-color: var(--pastel-border);
+  box-shadow: var(--pastel-shadow);
+}
+
+
+/* 7. HOME HERO --------------------------------------------------------- */
+body.pastel-body .core-hero {
+  background:
+    radial-gradient(ellipse 60% 90% at 100% 0%, rgba(var(--pastel-yellow-rgb), 0.55), transparent 70%),
+    linear-gradient(135deg, rgba(var(--pastel-sage-rgb), 0.95), rgba(var(--pastel-sky-rgb), 0.95));
+  color: #3a3a3a;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: var(--pastel-shadow);
+}
+
+body.pastel-body .core-hero .lead {
+  color: #4A4A4A;
+}
+
+body.pastel-body .core-hero .btn-light {
+  --bs-btn-bg: #ffffff;
+  --bs-btn-border-color: #ffffff;
+  --bs-btn-color: #43596d;
+  --bs-btn-hover-bg: #f6f1ec;
+  --bs-btn-hover-border-color: #f6f1ec;
+  --bs-btn-hover-color: #2f4252;
+}
+
+body.pastel-body .core-hero .btn-outline-light {
+  --bs-btn-color: #43596d;
+  --bs-btn-border-color: #5A6F84;
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #5A6F84;
+  --bs-btn-hover-border-color: #5A6F84;
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #43596d;
+  --bs-btn-active-border-color: #43596d;
+}
+
+
+/* 8. FOOTER ------------------------------------------------------------ */
+/* Blend the footer into the gradient instead of ending in a flat block */
+body.pastel-body .fye-footer {
+  --footer-bg: rgba(var(--pastel-sand-rgb), 0.55);
+  border-top-color: var(--pastel-border);
+}
