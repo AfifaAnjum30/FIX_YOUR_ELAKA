@@ -1,7 +1,13 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Reports | Fixyour elaka{% endblock %}
 
+{% block extra_head %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'reports/css/report-list.css' %}">
+{% endblock %}
+
 {% block content %}
+<div class="reports-page">
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
   <h1 class="h3 mb-0">Community reports</h1>
   {% if user.is_authenticated and user.is_citizen %}
@@ -28,35 +34,26 @@
   <div class="col-md-1"><button class="btn btn-outline-primary w-100" type="submit">Go</button></div>
 </form>
 
-<div class="row g-3">
+<div class="report-grid">
   {% for report in reports %}
-    <div class="col-md-6">
-      <div class="card shadow-sm h-100">
-        <div class="row g-0 h-100">
-          <div class="col-4">
-            <img src="{{ report.before_image.url }}" alt="Photo of {{ report.title }}"
-                 class="img-fluid rounded-start h-100 w-100" style="object-fit:cover; min-height:140px;">
-          </div>
-          <div class="col-8">
-            <div class="card-body">
-              <h2 class="h6 mb-1"><a class="stretched-link text-decoration-none" href="{{ report.get_absolute_url }}">{{ report.title }}</a></h2>
-              <div class="mb-2">{% include "reports/includes/status_badges.html" %}</div>
-              <div class="small text-muted">
-                <i class="bi bi-tag"></i> {{ report.category.name }}<br>
-                <i class="bi bi-geo-alt"></i> {{ report.area.name }} &middot; {{ report.location_text }}<br>
-                <i class="bi bi-clock"></i> {{ report.created_at|timesince }} ago
-              </div>
-            </div>
-          </div>
+    <article class="report-file {% cycle 'is-sage' 'is-yellow' 'is-blush' 'is-mix' 'is-sand' %}" style="--i: {{ forloop.counter0 }};">
+      <div class="report-file__photo">
+        <img src="{{ report.before_image.url }}" alt="Photo of {{ report.title }}" loading="lazy">
+      </div>
+      <div class="report-file__body">
+        <h2 class="report-file__title"><a class="stretched-link text-decoration-none" href="{{ report.get_absolute_url }}">{{ report.title }}</a></h2>
+        <div class="report-file__badges">{% include "reports/includes/status_badges.html" %}</div>
+        <div class="report-file__meta">
+          <div><i class="bi bi-tag"></i><span>{{ report.category.name }}</span></div>
+          <div><i class="bi bi-geo-alt"></i><span>{{ report.area.name }} &middot; {{ report.location_text }}</span></div>
+          <div><i class="bi bi-clock"></i><span>{{ report.created_at|timesince }} ago</span></div>
         </div>
       </div>
-    </div>
+    </article>
   {% empty %}
-    <div class="col-12">
-      <div class="card shadow-sm"><div class="card-body text-center text-muted py-5">
-        <i class="bi bi-clipboard-x fs-1"></i>
-        <p class="mb-0 mt-2">No reports match. Verified reports appear here publicly.</p>
-      </div></div>
+    <div class="report-empty">
+      <i class="bi bi-clipboard-x fs-1"></i>
+      <p class="mb-0 mt-2">No reports match. Verified reports appear here publicly.</p>
     </div>
   {% endfor %}
 </div>
@@ -74,4 +71,5 @@
   </ul>
 </nav>
 {% endif %}
+</div>
 {% endblock %}

@@ -1,0 +1,335 @@
+/* ==========================================================================
+   FIX YOUR ELAKA - Community reports page ("report file" cards)
+   Used only by reports/report_list.html. Requires pastel-theme.css.
+   ========================================================================== */
+
+
+/* 1. GRID -------------------------------------------------------------- */
+/* 3 columns on desktop, 2 on tablet, 1 on phones - no breakpoints needed */
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 30px 24px;
+  padding-top: 18px;          /* room for the paper clips on the first row */
+  align-items: stretch;
+}
+
+
+/* 2. REPORT-FILE CARD -------------------------------------------------- */
+.report-file {
+  /* tint defaults (overridden by .is-* variants below) */
+  --tint-a: rgba(249, 234, 225, 0.78);
+  --tint-b: rgba(255, 255, 255, 0.46);
+  --edge:   rgba(176, 146, 120, 0.34);
+  --glow:   rgba(242, 186, 145, 0.55);
+
+  /* paper grain (tiny inline SVG, no extra file or request) */
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .32 0 0 0 0 .26 0 0 0 .28 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  /* paper clip */
+  --paper-clip: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-2 -2 22 48'%3E%3Cpath d='M7 28V9a5 5 0 0 1 10 0v25a8 8 0 0 1-16 0V12' fill='none' stroke='%237d8fa3' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border-radius: 22px;
+  border: 1px solid var(--edge);
+
+  background:
+    var(--paper-grain),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0, rgba(255, 255, 255, 0) 22px),  /* folded top edge */
+    linear-gradient(155deg, var(--tint-a), var(--tint-b));
+
+  -webkit-backdrop-filter: blur(14px) saturate(1.35);
+          backdrop-filter: blur(14px) saturate(1.35);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 1px 2px rgba(120, 90, 70, 0.06),
+    0 10px 26px rgba(120, 90, 70, 0.09);
+
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.35s ease;
+
+  /* entrance: float up + fade in, staggered by --i (set in the template) */
+  animation: report-file-rise 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+/* tint variants (cycled in the template) */
+.report-file.is-sage   { --tint-a: rgba(194, 221, 197, 0.72); --tint-b: rgba(255, 255, 255, 0.44); --edge: rgba(112, 160, 122, 0.42); --glow: rgba(160, 205, 168, 0.70); }
+.report-file.is-yellow { --tint-a: rgba(249, 228, 169, 0.74); --tint-b: rgba(255, 255, 255, 0.44); --edge: rgba(205, 172,  80, 0.42); --glow: rgba(246, 220, 140, 0.75); }
+.report-file.is-blush  { --tint-a: rgba(249, 234, 225, 0.82); --tint-b: rgba(245, 195, 184, 0.46); --edge: rgba(212, 145, 130, 0.38); --glow: rgba(245, 180, 165, 0.70); }
+.report-file.is-sand   { --tint-a: rgba(249, 234, 225, 0.80); --tint-b: rgba(255, 255, 255, 0.46); --edge: rgba(176, 146, 120, 0.34); --glow: rgba(242, 186, 145, 0.60); }
+.report-file.is-mix    { --tint-a: rgba(194, 221, 197, 0.70); --tint-b: rgba(249, 228, 169, 0.64); --edge: rgba(160, 175, 100, 0.40); --glow: rgba(215, 225, 150, 0.70); }
+
+/* extra frosted lightness that fades in on hover (raises the opacity) */
+.report-file::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.22);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+/* paper clip on the top-right */
+.report-file::after {
+  content: "";
+  position: absolute;
+  top: -16px;
+  right: 26px;
+  width: 18px;
+  height: 44px;
+  background: var(--paper-clip) center / contain no-repeat;
+  transform: rotate(7deg);
+  transform-origin: 50% 0;
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  filter: drop-shadow(0 2px 2px rgba(80, 60, 50, 0.22));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* hover / keyboard focus: lift, lighter glass, soft glow */
+.report-file:hover,
+.report-file:focus-within {
+  transform: translateY(-6px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 0 0 1px var(--edge),
+    0 0 30px var(--glow),
+    0 22px 40px rgba(120, 90, 70, 0.14);
+}
+.report-file:hover::before,
+.report-file:focus-within::before {
+  opacity: 1;
+}
+.report-file:hover::after,
+.report-file:focus-within::after {
+  transform: translateY(-2px) rotate(10deg);
+}
+
+/* click: tiny paper "press" */
+.report-file:active {
+  transform: translateY(-2px) scale(0.985);
+  transition-duration: 0.12s;
+}
+
+@keyframes report-file-rise {
+  from { opacity: 0; transform: translateY(22px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+
+/* 3. PHOTO & TEXT HIERARCHY -------------------------------------------- */
+.report-file__photo {
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 2px 8px rgba(120, 90, 70, 0.10);
+}
+.report-file__photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.report-file:hover .report-file__photo img,
+.report-file:focus-within .report-file__photo img {
+  transform: scale(1.045);
+}
+
+.report-file__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 6px 4px;
+}
+
+.report-file__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: #3a3a3a;
+}
+.report-file__title a {
+  color: inherit;
+}
+
+.report-file__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.report-file__meta {
+  margin-top: auto;                         /* pins meta to the bottom so cards align */
+  padding-top: 12px;
+  border-top: 1px dashed rgba(122, 98, 84, 0.28);
+  display: grid;
+  gap: 6px;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  color: #54463f;
+}
+.report-file__meta > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.report-file__meta .bi {
+  flex: none;
+  margin-top: 0.12em;
+  color: #86695a;
+}
+.report-file__meta > div:first-child {
+  font-weight: 600;                         /* category stands out */
+}
+.report-file__meta > div:last-child {
+  font-size: 0.8rem;
+  color: #5f524a;
+}
+
+
+/* 4. SOFT PILL STATUS BADGES ------------------------------------------- */
+/* Same markup/classes as before (includes/status_badges.html is untouched).
+   Bootstrap's text-bg-* use !important, so these overrides do too. */
+.report-file .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.38em 0.85em;
+  border-radius: 999px;
+  border-width: 1px;
+  border-style: solid;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+.report-file .badge.text-bg-success   { background-color: rgba(194, 221, 197, 0.90) !important; color: #2b5738 !important; border-color: rgba(90, 140, 100, 0.38) !important; }
+.report-file .badge.text-bg-info      { background-color: rgba(189, 209, 230, 0.92) !important; color: #2a4866 !important; border-color: rgba(90, 120, 160, 0.38) !important; }
+.report-file .badge.text-bg-warning   { background-color: rgba(249, 228, 169, 0.95) !important; color: #66490a !important; border-color: rgba(190, 150,  50, 0.42) !important; }
+.report-file .badge.text-bg-secondary { background-color: rgba(249, 234, 225, 0.92) !important; color: #65463b !important; border-color: rgba(180, 130, 115, 0.42) !important; }
+.report-file .badge.text-bg-dark      { background-color: rgba(222, 217, 212, 0.92) !important; color: #383838 !important; border-color: rgba(100, 100, 100, 0.32) !important; }
+.report-file .badge.text-bg-danger    { background-color: rgba(245, 195, 184, 0.95) !important; color: #8a2a1d !important; border-color: rgba(200,  90,  70, 0.42) !important; }
+.report-file .badge.text-bg-light     { background-color: rgba(255, 255, 255, 0.70) !important; color: #55453d !important; border-color: rgba(122,  98,  84, 0.28) !important; }
+
+
+/* 5. EMPTY STATE ------------------------------------------------------- */
+.report-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3.5rem 1rem;
+  border-radius: 22px;
+  border: 1px solid var(--pastel-border);
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+  color: #54463f;
+  animation: report-file-rise 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+
+/* 6. FILTERS, TABS & PAGINATION (visual polish only) -------------------- */
+.reports-page .nav-pills {
+  --bs-nav-pills-link-active-bg: #5A6F84;
+  --bs-nav-pills-link-active-color: #fff;
+  gap: 0.4rem;
+}
+.reports-page .nav-pills .nav-link {
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  font-size: 0.92rem;
+  color: #43596d;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--pastel-border);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.reports-page .nav-pills .nav-link:hover {
+  background: rgba(255, 255, 255, 0.82);
+}
+.reports-page .nav-pills .nav-link.active {
+  background: #5A6F84;
+  color: #fff;
+  border-color: transparent;
+}
+
+.reports-page form .form-control,
+.reports-page form .form-select {
+  min-height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--pastel-border);
+  background-color: rgba(255, 255, 255, 0.68);
+  box-shadow: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.reports-page form .form-control:focus,
+.reports-page form .form-select:focus {
+  background-color: #fff;
+  border-color: #7d93a8;
+  box-shadow: 0 0 0 0.2rem rgba(109, 129, 150, 0.18);
+}
+.reports-page form .btn {
+  min-height: 42px;
+  border-radius: 12px;
+}
+
+.reports-page .pagination {
+  --bs-pagination-bg: rgba(255, 255, 255, 0.55);
+  --bs-pagination-color: #43596d;
+  --bs-pagination-border-color: var(--pastel-border);
+  --bs-pagination-hover-bg: rgba(255, 255, 255, 0.9);
+  --bs-pagination-hover-color: #2f4252;
+  --bs-pagination-hover-border-color: var(--pastel-border);
+  --bs-pagination-disabled-bg: rgba(255, 255, 255, 0.40);
+  --bs-pagination-disabled-color: #555555;
+  --bs-pagination-disabled-border-color: var(--pastel-border);
+  gap: 0.4rem;
+}
+.reports-page .pagination .page-item .page-link {
+  margin-left: 0;
+  border-radius: 999px;
+  padding: 0.42rem 1rem;
+}
+
+
+/* 7. ACCESSIBILITY & FALLBACKS ----------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .report-file,
+  .report-empty {
+    animation: none;
+    transition: none;
+  }
+  .report-file:hover,
+  .report-file:focus-within,
+  .report-file:active {
+    transform: none;
+  }
+  .report-file__photo img,
+  .report-file::after {
+    transition: none;
+  }
+  .report-file:hover .report-file__photo img,
+  .report-file:focus-within .report-file__photo img {
+    transform: none;
+  }
+}
+
+/* Browsers without backdrop-filter: make the card a bit more opaque so text stays readable */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .report-file  { background-color: rgba(255, 255, 255, 0.55); }
+  .report-empty { background: rgba(255, 255, 255, 0.80); }
+}
