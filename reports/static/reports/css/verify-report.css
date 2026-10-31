@@ -1,0 +1,60 @@
+/* ---------- Verify Report page ---------- */
+.verify-page{--v-blue:#6D8196;--v-ink:#4A4A4A;--v-line:#e1e5e8;--v-ivory:#FFFFE3;max-width:1140px;margin:12px auto 52px;color:var(--v-ink);font-family:inherit}
+
+/* Heading */
+.verify-page-heading{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:28px}
+.verify-eyebrow{font-size:11px;letter-spacing:2px;font-weight:800;color:var(--v-blue);margin-bottom:8px}
+.verify-page-heading h1{font-weight:750;font-size:clamp(26px,3vw,36px);margin:0 0 8px;letter-spacing:-.8px}
+.verify-page-heading p{color:#77808a;margin:0;font-size:14px}
+.verify-back,.verify-cancel{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;color:var(--v-ink);border:1px solid var(--v-line);padding:11px 17px;border-radius:10px;background:#fff;font-weight:600;font-size:13px;white-space:nowrap}
+.verify-back:hover,.verify-cancel:hover{background:#f2f5f7;color:#344a5c}
+
+/* Layout + cards */
+.verify-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(250px,.85fr);gap:22px;align-items:start}
+.verify-main-card,.verify-info-card{background:#fff;border:1px solid var(--v-line);border-radius:18px;box-shadow:0 12px 40px rgba(45,62,77,.045)}
+.verify-main-card{padding:32px}
+.verify-card-header{display:flex;align-items:center;gap:15px;padding-bottom:24px;border-bottom:1px solid var(--v-line);margin-bottom:28px}
+.verify-header-icon{width:46px;height:46px;border-radius:13px;background:#edf1f4;color:var(--v-blue);display:grid;place-items:center;font-size:23px;flex-shrink:0}
+.verify-card-header h2{font-size:19px;font-weight:750;margin:0 0 4px}
+.verify-card-header p{font-size:13px;color:#7d858c;margin:0}
+
+/* Form fields */
+.verify-field{margin-bottom:27px}
+.verify-field>label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+.verify-field>label i{color:var(--v-blue);margin-right:7px}
+.required-mark{color:#a94c4c}
+.verify-field-help{font-size:12px;color:#8a9096;margin:0 0 12px}
+.verify-field select,.verify-field textarea{width:100%;border:1px solid #d8dfe4;border-radius:10px;padding:13px 14px;background:#fbfcfd;color:var(--v-ink);outline:none;transition:border-color .2s,box-shadow .2s}
+.verify-field select:focus,.verify-field textarea:focus{border-color:var(--v-blue);box-shadow:0 0 0 3px rgba(109,129,150,.14)}
+.verify-field textarea{min-height:140px;resize:vertical}
+.verify-error{color:#b23b45;font-size:12px;margin-top:7px}
+
+/* Buttons */
+.verify-actions{display:flex;justify-content:flex-end;gap:12px;padding-top:22px;border-top:1px solid var(--v-line)}
+.verify-submit{border:0;border-radius:10px;padding:12px 21px;background:var(--v-blue);color:#fff;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:9px;transition:background .2s}
+.verify-submit:hover{background:#536b81}
+.verify-submit:disabled{opacity:.7;cursor:wait}
+
+/* Side cards */
+.verify-side{display:grid;gap:17px}
+.verify-info-card{padding:26px}
+.verify-info-label{font-size:10px;font-weight:800;letter-spacing:1.7px;color:var(--v-blue)}
+.verify-info-card h2{font-size:19px;line-height:1.35;margin:12px 0 10px;font-weight:750;overflow-wrap:anywhere}
+.verify-description{font-size:13px;line-height:1.7;color:#7d858c;margin:0 0 18px;overflow-wrap:anywhere}
+.verify-info-line{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:13px 0;border-top:1px solid #eef0f2;font-size:12px}
+.verify-info-line span{color:#89919a}
+.verify-info-line strong{text-align:right;font-size:12px;overflow-wrap:anywhere}
+
+/* Verification state colours */
+.verify-state-pending{color:#a07a1c}
+.verify-state-verified{color:#3f7d58}
+.verify-state-rejected{color:#b23b45}
+
+.verify-guidance-card{background:var(--v-ivory);border:1px solid #eeeccf;border-radius:15px;padding:21px;display:flex;align-items:flex-start;gap:12px}
+.verify-guidance-card>i{font-size:22px;color:#7d896b}
+.verify-guidance-card strong{font-size:13px}
+.verify-guidance-card p{font-size:12px;line-height:1.7;color:#7d8174;margin:6px 0 0}
+
+/* Responsive */
+@media(max-width:800px){.verify-layout{grid-template-columns:1fr}.verify-page-heading{align-items:flex-start}.verify-side{grid-template-columns:1fr 1fr}}
+@media(max-width:575px){.verify-page-heading{flex-direction:column}.verify-main-card{padding:20px}.verify-side{grid-template-columns:1fr}.verify-actions{flex-direction:column-reverse}.verify-actions>*{width:100%;justify-content:center}.verify-page{margin-top:0}}

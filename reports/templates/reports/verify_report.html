@@ -1,18 +1,117 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Verify Report</title>
-</head>
-<body>
-    <h2>Verify Report: {{ report.title }}</h2>
+{% extends 'base.html' %}
+{% load static %}
 
-    <p>{{ report.description }}</p>
-    <p>Area: {{ report.area }}</p>
+{% block title %}Verify Report | Fix Your Elaka{% endblock %}
 
-    <form method="POST">
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'reports/css/verify-report.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="verify-page">
+
+  <!-- Page heading -->
+  <div class="verify-page-heading">
+    <div>
+      <div class="verify-eyebrow"><i class="bi bi-patch-check"></i> REPORT REVIEW</div>
+      <h1>Verify Report</h1>
+      <p>Review the details below, then verify or reject this report.</p>
+    </div>
+    <a href="{% url 'reports:detail' report.pk %}" class="verify-back">
+      <i class="bi bi-arrow-left"></i> Back to report
+    </a>
+  </div>
+
+  <div class="verify-layout">
+
+    <!-- Main form card -->
+    <section class="verify-main-card">
+      <div class="verify-card-header">
+        <span class="verify-header-icon"><i class="bi bi-clipboard2-check"></i></span>
+        <div>
+          <h2>Your decision</h2>
+          <p>Choose an outcome and leave remarks for the record.</p>
+        </div>
+      </div>
+
+      <form method="post" id="verify-form" novalidate>
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit Verification</button>
-    </form>
-</body>
-</html>
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="verify-field">
+          <label for="{{ form.status.id_for_label }}">
+            <i class="bi bi-signpost-split"></i> Decision <span class="required-mark">*</span>
+          </label>
+          <p class="verify-field-help">Verify if the issue is genuine, or reject if it is not valid.</p>
+          {{ form.status }}
+          {% for error in form.status.errors %}<div class="verify-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="verify-field">
+          <label for="{{ form.remarks.id_for_label }}">
+            <i class="bi bi-chat-left-text"></i> Remarks
+          </label>
+          <p class="verify-field-help">Optional. Explain why you verified or rejected this report.</p>
+          {{ form.remarks }}
+          {% for error in form.remarks.errors %}<div class="verify-error">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="verify-actions">
+          <a href="{% url 'reports:detail' report.pk %}" class="verify-cancel">Cancel</a>
+          <button type="submit" class="verify-submit" id="verify-submit">
+            <i class="bi bi-check2-circle"></i> Submit Verification
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Side column -->
+    <aside class="verify-side">
+      <div class="verify-info-card">
+        <span class="verify-info-label">REPORT OVERVIEW</span>
+        <h2>{{ report.title }}</h2>
+        {% if report.description %}
+          <p class="verify-description">{{ report.description|truncatewords:40 }}</p>
+        {% endif %}
+        <div class="verify-info-line"><span>Report ID</span><strong>#{{ report.pk }}</strong></div>
+        {% if report.area %}
+          <div class="verify-info-line"><span>Area</span><strong>{{ report.area }}</strong></div>
+        {% endif %}
+        <div class="verify-info-line">
+          <span>Current verification</span>
+          <strong class="verify-state verify-state-{{ report.verification_status }}">{{ report.get_verification_status_display }}</strong>
+        </div>
+      </div>
+
+      <div class="verify-guidance-card">
+        <i class="bi bi-shield-check"></i>
+        <div>
+          <strong>Review carefully</strong>
+          <p>Verified reports count towards the reporter's trust score and unlock status updates.</p>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+  // Disable the button after submit so the form isn't sent twice
+  document.addEventListener('DOMContentLoaded', function () {
+    var form = document.getElementById('verify-form');
+    var btn = document.getElementById('verify-submit');
+    if (form && btn) {
+      form.addEventListener('submit', function () {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Submitting...';
+      });
+    }
+  });
+</script>
+{% endblock %}
