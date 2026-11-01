@@ -94,15 +94,40 @@ class DashboardRedirectView(LoginRequiredMixin, RedirectView):
 class CitizenDashboardView(CitizenRequiredMixin, TemplateView):
     template_name = "accounts/citizen_dashboard.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from reports.models import Report  # local import avoids circular imports
+
+        context["my_reports"] = (
+            Report.objects.filter(reporter=self.request.user)
+            .select_related("category", "area")
+            .order_by("-created_at")
+        )
+        return context
+
 
 class AuthorityDashboardView(ApprovedAuthorityRequiredMixin, TemplateView):
     template_name = "accounts/authority_dashboard.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["profile"] = self.request.user.authority_profile
-        return context
+        from django.db.models import Count, Q
+        from reports.models import Report
+        from reports.permissions import reports_in_authority_area
 
+        context["profile"] = self.request.user.authority_profile
+
+        area_reports = reports_in_authority_area(self.request.user)
+
+        context["stats"] = area_reports.aggregate(
+            pending=Count("id", filter=Q(operational_status=Report.REPORTED)),
+            in_progress=Count("id", filter=Q(operational_status=Report.IN_PROGRESS)),
+            resolved=Count("id", filter=Q(operational_status=Report.RESOLVED)),
+            needs_verification=Count("id", filter=Q(verification_status="pending")),
+        )
+
+        context["recent_reports"] = area_reports.order_by("-created_at")[:10]
+        return context
 
 class PendingApprovalView(AuthorityRequiredMixin, TemplateView):
     """Shown to authorities whose account is pending or rejected."""

@@ -32,10 +32,36 @@
 </div>
 
 <div class="card shadow-sm">
-  <div class="card-header bg-white fw-semibold">My reports</div>
-  <div class="card-body text-center text-muted py-5">
-    <i class="bi bi-clipboard-data fs-1"></i>
-    <p class="mb-0 mt-2">Your submitted reports will appear here once the Reports app is added.</p>
+  <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+    <span>My reports</span>
+    <a class="btn btn-sm btn-primary" href="{% url 'reports:create' %}">
+      <i class="bi bi-plus-circle"></i> Report a problem
+    </a>
   </div>
+
+  {% if my_reports %}
+    <div class="list-group list-group-flush">
+      {% for report in my_reports %}
+        <a href="{{ report.get_absolute_url }}"
+           class="list-group-item list-group-item-action d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div>
+            <div class="fw-semibold">{{ report.title }}</div>
+            <div class="small text-muted">
+              {{ report.category.name }} &middot; {{ report.area.name }} &middot;
+              {{ report.created_at|timesince }} ago
+            </div>
+          </div>
+          <div class="d-flex gap-1">
+            {% include "reports/includes/status_badges.html" %}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card-body text-center text-muted py-5">
+      <i class="bi bi-clipboard-data fs-1"></i>
+      <p class="mb-0 mt-2">You haven't submitted any reports yet.</p>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}

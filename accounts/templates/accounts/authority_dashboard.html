@@ -32,27 +32,59 @@
 <div class="row g-3 mb-4">
   <div class="col-sm-6 col-lg-3">
     <div class="card shadow-sm h-100"><div class="card-body">
-      <div class="text-muted small">Pending reports</div><div class="display-6">&mdash;</div>
+      <div class="text-muted small">Pending reports</div>
+      <div class="display-6">{{ stats.pending }}</div>
     </div></div>
   </div>
   <div class="col-sm-6 col-lg-3">
     <div class="card shadow-sm h-100"><div class="card-body">
-      <div class="text-muted small">In progress</div><div class="display-6">&mdash;</div>
+      <div class="text-muted small">In progress</div>
+      <div class="display-6">{{ stats.in_progress }}</div>
     </div></div>
   </div>
   <div class="col-sm-6 col-lg-3">
     <div class="card shadow-sm h-100"><div class="card-body">
-      <div class="text-muted small">Resolved</div><div class="display-6">&mdash;</div>
+      <div class="text-muted small">Resolved</div>
+      <div class="display-6">{{ stats.resolved }}</div>
     </div></div>
   </div>
   <div class="col-sm-6 col-lg-3">
-    <div class="card shadow-sm h-100"><div class="card-body">
-      <div class="text-muted small">Needs verification</div><div class="display-6">&mdash;</div>
+    <div class="card shadow-sm h-100 {% if stats.needs_verification %}border-warning{% endif %}"><div class="card-body">
+      <div class="text-muted small">Needs verification</div>
+      <div class="display-6">{{ stats.needs_verification }}</div>
     </div></div>
   </div>
 </div>
 
-<div class="alert alert-secondary mb-0">
-  Report statistics for <strong>{{ profile.assigned_area_name }}</strong> will appear here once the Reports app is added.
+<div class="card shadow-sm">
+  <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+    <span>Recent reports in {{ profile.assigned_area_name }}</span>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'reports:list' %}?scope=area">View all</a>
+  </div>
+
+  {% if recent_reports %}
+    <div class="list-group list-group-flush">
+      {% for report in recent_reports %}
+        <a href="{{ report.get_absolute_url }}"
+           class="list-group-item list-group-item-action d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div>
+            <div class="fw-semibold">{{ report.title }}</div>
+            <div class="small text-muted">
+              {{ report.category.name }} &middot; {{ report.location_text }} &middot;
+              {{ report.created_at|timesince }} ago
+            </div>
+          </div>
+          <div class="d-flex gap-1">
+            {% include "reports/includes/status_badges.html" %}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card-body text-center text-muted py-5">
+      <i class="bi bi-clipboard-check fs-1"></i>
+      <p class="mb-0 mt-2">No reports in {{ profile.assigned_area_name }} yet.</p>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}
