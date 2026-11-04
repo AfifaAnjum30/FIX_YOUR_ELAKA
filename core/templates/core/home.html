@@ -1,19 +1,42 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Fixyour elaka | Home{% endblock %}
+{% block title %}Fix Your Elaka | Make Change Happen{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{% static 'core/css/site.css' %}">
-<section class="core-hero p-5 rounded-4 mb-4">
-  <h1 class="display-5 fw-bold">Fix your neighborhood, together.</h1>
-  <p class="lead">Discover community issues, explore local areas, and follow verified reports.</p>
-  <a class="btn btn-light btn-lg" href="{% url 'core:map' %}">Explore map</a>
-  <a class="btn btn-outline-light btn-lg" href="{% url 'core:areas' %}">Browse areas</a>
-  {% if user.is_authenticated and user.is_citizen %}
-  <a class="btn btn-outline-light btn-lg" href="{% url 'reports:create' %}"><i class="bi bi-plus-circle"></i> Report a problem</a> {% endif %}
-  {% if not user.is_authenticated %}<a class="btn btn-outline-light btn-lg" href="{% url 'accounts:register' %}">Join now</a>{% endif %}
-</section>
-<div class="row g-3">
-  <div class="col-md-6"><div class="card shadow-sm"><div class="card-body"><h2 class="h4">{{ area_count }} areas</h2><p>Neighborhoods covered by the platform.</p><a href="{% url 'core:areas' %}">View areas →</a></div></div></div>
-  <div class="col-md-6"><div class="card shadow-sm"><div class="card-body"><h2 class="h4">{{ category_count }} categories</h2><p>Types of local problems you can report.</p><a href="{% url 'core:categories' %}">View categories →</a></div></div></div>
+<div class="fye-home">
+  <section class="fye-hero" aria-labelledby="fye-hero-title">
+    <div class="fye-hero-glow" aria-hidden="true"></div>
+    <div class="fye-hero-inner">
+      <div class="fye-hero-copy">
+        <div class="fye-eyebrow fye-animate-in"><span class="fye-eyebrow-dot"></span> Your neighborhood. Your voice.</div>
+        <h1 id="fye-hero-title" class="fye-animate-in">Small reports.<br>Big <span class="fye-highlight">change<span class="fye-period">.</span></span></h1>
+        <p class="fye-hero-lead fye-animate-in">See a problem in your area? Report it, follow its progress, and help build a cleaner, safer neighborhood—together.</p>
+        <div class="fye-hero-actions fye-animate-in">
+          {% if user.is_authenticated and user.is_citizen %}<a class="fye-button fye-button-dark" href="{% url 'reports:create' %}"><i class="bi bi-plus-circle"></i> Report an Issue <i class="bi bi-arrow-up-right"></i></a>
+          {% elif not user.is_authenticated %}<a class="fye-button fye-button-dark" href="{% url 'accounts:register' %}">Start Making a Difference <i class="bi bi-arrow-up-right"></i></a>
+          {% else %}<a class="fye-button fye-button-dark" href="{% url 'accounts:dashboard' %}">Go to Dashboard <i class="bi bi-arrow-up-right"></i></a>{% endif %}
+          <a class="fye-button fye-button-light" href="{% url 'core:map' %}"><i class="bi bi-map"></i> Explore the Map</a>
+        </div>
+        <div class="fye-hero-trust fye-animate-in"><span class="fye-trust-icon"><i class="bi bi-shield-check"></i></span> A simple way to report, track and improve local issues</div>
+      </div>
+      <div class="fye-hero-art" id="fyeHeroArt">
+        <div class="fye-art-orbit fye-art-orbit-one" aria-hidden="true"></div><div class="fye-art-orbit fye-art-orbit-two" aria-hidden="true"></div>
+        <div class="fye-art-stage" id="fyeArtStage"><img class="fye-city-illustration" src="{% static 'core/img/city-street-repair.png' %}" alt="Illustration of a damaged street, buildings and a repair location marker" fetchpriority="high"></div>
+        <div class="fye-floating-card fye-floating-top"><span class="fye-float-icon fye-red"><i class="bi bi-exclamation-triangle-fill"></i></span><span><strong>Spot an issue?</strong><small>Make your voice heard</small></span></div>
+        <div class="fye-floating-card fye-floating-bottom"><span class="fye-float-icon fye-teal"><i class="bi bi-check2-circle"></i></span><span><strong>Track progress</strong><small>Follow every update</small></span></div>
+      </div>
+    </div>
+    <div class="fye-hero-scroll" aria-hidden="true"><span></span> SCROLL TO EXPLORE</div>
+  </section>
+
+  <section class="fye-stats-wrap fye-reveal" aria-label="Platform coverage">
+    <div class="fye-stats"><div class="fye-stat"><span class="fye-stat-symbol"><i class="bi bi-geo-alt"></i></span><div><strong class="fye-count" data-count="{{ area_count|default:0 }}">{{ area_count|default:0 }}</strong><span>Areas covered</span></div></div><div class="fye-stat-divider"></div><div class="fye-stat"><span class="fye-stat-symbol"><i class="bi bi-grid"></i></span><div><strong class="fye-count" data-count="{{ category_count|default:0 }}">{{ category_count|default:0 }}</strong><span>Issue categories</span></div></div><div class="fye-stat-divider"></div><div class="fye-stat fye-stat-phrase"><span class="fye-stat-symbol"><i class="bi bi-people"></i></span><div><strong>One community</strong><span>Working for better neighborhoods</span></div></div></div>
+  </section>
+
+  <section class="fye-section fye-how" aria-labelledby="fye-how-title">
+    <div class="fye-section-heading fye-reveal"><span class="fye-section-tag">SIMPLE. TRANSPARENT. EFFECTIVE.</span><h2 id="fye-how-title">Real change starts <span>with one report.</span></h2><p>Three simple steps to make your neighborhood a better place.</p></div>
+    <div class="fye-steps"><article class="fye-step fye-reveal"><div class="fye-step-num">01</div><div class="fye-step-icon fye-step-yellow"><i class="bi bi-pencil-square"></i></div><h3>Report a problem</h3><p>Share the issue, add a photo and pinpoint its location.</p></article><article class="fye-step fye-reveal"><div class="fye-step-num">02</div><div class="fye-step-icon fye-step-blue"><i class="bi bi-clock-history"></i></div><h3>Follow the progress</h3><p>Stay informed as your report moves through the process.</p></article><article class="fye-step fye-reveal"><div class="fye-step-num">03</div><div class="fye-step-icon fye-step-green"><i class="bi bi-check2-circle"></i></div><h3>Build a better area</h3><p>Help communities and local authorities focus on what matters.</p></article></div>
+  </section>
+
+  <section class="fye-explore-section"><div class="fye-explore-inner fye-reveal"><div><span class="fye-section-tag">DISCOVER YOUR COMMUNITY</span><h2>Every neighborhood<br>deserves attention.</h2><p>Explore covered areas and the types of issues that matter to your community.</p><div class="fye-explore-actions"><a class="fye-button fye-button-dark" href="{% url 'core:areas' %}">Browse Areas <i class="bi bi-arrow-up-right"></i></a><a class="fye-button fye-button-outline" href="{% url 'core:categories' %}">View Categories</a></div></div><div class="fye-explore-graphic" aria-hidden="true"><div class="fye-graphic-ring"><i class="bi bi-geo-alt-fill"></i></div><span class="fye-graphic-dot dot-a"></span><span class="fye-graphic-dot dot-b"></span><span class="fye-graphic-dot dot-c"></span></div></div></section>
 </div>
 {% endblock %}
