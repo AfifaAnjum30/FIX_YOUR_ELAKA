@@ -1,0 +1,43 @@
+
+:root {
+    --fye-background: #FDFBF7;
+    --fye-primary: #FFB800;
+    --fye-navy: #0A192F;
+    --fye-danger: #E03A3E;
+    --fye-teal: #008F8C;
+    --fye-white: #FFFFFF;
+    --fye-text: #0A192F;
+}
+
+html,
+body.fye-body {
+    background: var(--fye-background);
+    color: var(--fye-text);
+}
+
+body.fye-body {
+    background-image: none;
+    overflow-x: hidden;
+}
+
+.fye-main {
+    background: var(--fye-background);
+    color: var(--fye-text);
+}
+
+.fye-body .btn-primary {
+    background: var(--fye-navy);
+    border-color: var(--fye-navy);
+    color: white;
+}
+
+.fye-body .btn-primary:hover {
+    background: #183454;
+    border-color: #183454;
+}
+
+.fye-body a:focus-visible,
+.fye-body button:focus-visible {
+    outline: 3px solid var(--fye-primary);
+    outline-offset: 3px;
+}
