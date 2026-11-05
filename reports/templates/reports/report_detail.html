@@ -1,131 +1,163 @@
 {% extends "base.html" %}
-   {% load static interactions_tags %}
-{% block title %}{{ report.title }} | Fixyour elaka{% endblock %}
+{% load static interactions_tags %}
+{% block title %}{{ report.title }} | Fix Your Elaka{% endblock %}
 
 {% block extra_head %}{{ block.super }}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-<style>#detail-map { height: 260px; border-radius: .5rem; }</style>
+<link rel="stylesheet" href="{% static 'reports/css/report-detail.css' %}">
 {% endblock %}
 
 {% block content %}
-<nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{% url 'reports:list' %}">Reports</a></li>
-    <li class="breadcrumb-item active" aria-current="page">#{{ report.pk }}</li>
-  </ol>
-</nav>
+<div class="rd-page">
 
-<div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
-  <div>
-    <h1 class="h3 mb-2">{{ report.title }}</h1>
-    {% include "reports/includes/status_badges.html" %}
-    {% if report.is_safety %}<span class="badge text-bg-warning"><i class="bi bi-shield-exclamation"></i> Safety concern (not public)</span>{% endif %}
-  </div>
-  <div class="text-muted small text-md-end mt-2 mt-md-0">
-    Reported by <strong>{{ report.reporter.username }}</strong><br>
-    {{ report.created_at|date:"d M Y, H:i" }}
-  </div>
-</div>
+  <nav class="rd-crumbs" aria-label="breadcrumb">
+    <a href="{% url 'reports:list' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> All reports</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">Report #{{ report.pk }}</span>
+  </nav>
 
-{# Progress tracker #}
-<div class="card shadow-sm mb-4"><div class="card-body">
-  <ol class="list-unstyled d-flex flex-wrap gap-3 mb-0">
-    {% for key, label in workflow_steps %}
-      <li class="{% if key == report.operational_status %}fw-bold text-primary{% else %}text-muted{% endif %}">
-        <i class="bi {% if key == report.operational_status %}bi-record-circle-fill{% else %}bi-circle{% endif %}"></i> {{ label }}
-      </li>
-    {% endfor %}
-  </ol>
-  {% if report.verification_status == 'pending' %}
-    <div class="small text-muted mt-2">Waiting for an authority to verify this report.</div>
-  {% elif report.verification_status == 'rejected' %}
-    <div class="small text-danger mt-2">This report was rejected during verification.</div>
-  {% endif %}
-</div></div>
+  <header class="rd-header">
+    <div>
+      <h1 class="rd-title">{{ report.title }}</h1>
+      <div class="rd-badges">
+        {% include "reports/includes/status_badges.html" %}
+        {% if report.is_safety %}<span class="badge text-bg-warning"><i class="bi bi-shield-exclamation"></i> Safety concern (not public)</span>{% endif %}
+      </div>
+    </div>
+    <div class="rd-meta">
+      <span class="rd-avatar" aria-hidden="true">{{ report.reporter.username|slice:":1"|upper }}</span>
+      <div>
+        <span class="rd-meta-label">Reported by</span>
+        <strong>{{ report.reporter.username }}</strong>
+        <span class="rd-meta-date">{{ report.created_at|date:"d M Y, H:i" }}</span>
+      </div>
+    </div>
+  </header>
 
-<div class="row g-4">
-  <div class="col-lg-7">
-    <div class="card shadow-sm mb-4">
-      <div class="card-header bg-white fw-semibold">Photos</div>
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <div class="small text-muted mb-1">Before</div>
-            <a href="{{ report.before_image.url }}" target="_blank" rel="noopener">
-              <img src="{{ report.before_image.url }}" alt="Before photo" class="img-fluid rounded border">
-            </a>
-          </div>
-          <div class="col-md-6">
-            <div class="small text-muted mb-1">After</div>
-            {% if report.after_image %}
-              <a href="{{ report.after_image.url }}" target="_blank" rel="noopener">
-                <img src="{{ report.after_image.url }}" alt="After photo" class="img-fluid rounded border">
-              </a>
-            {% else %}
-              <div class="border rounded text-center text-muted p-5 small">
-                {% if report.is_safety %}Not required for safety concerns{% else %}No repair photo yet{% endif %}
-              </div>
-            {% endif %}
+  {# Progress tracker #}
+  <section class="rd-card rd-tracker" aria-label="Report progress">
+    <ol class="rd-steps">
+      {% for key, label in workflow_steps %}
+        <li class="rd-step{% if key == report.operational_status %} is-active{% endif %}"{% if key == report.operational_status %} aria-current="step"{% endif %}>
+          <i class="bi {% if key == report.operational_status %}bi-record-circle-fill{% else %}bi-circle{% endif %}" aria-hidden="true"></i>
+          <span>{{ label }}</span>
+        </li>
+      {% endfor %}
+    </ol>
+    {% if report.verification_status == 'pending' %}
+      <p class="rd-note">Waiting for an authority to verify this report.</p>
+    {% elif report.verification_status == 'rejected' %}
+      <p class="rd-note rd-note--danger">This report was rejected during verification.</p>
+    {% endif %}
+  </section>
+
+  <div class="rd-grid">
+    <div class="rd-main">
+
+      <section class="rd-card">
+        <h2 class="rd-card-title"><i class="bi bi-images" aria-hidden="true"></i> Photos</h2>
+        <div class="rd-card-body">
+          <div class="rd-photos">
+            <div>
+              <span class="rd-photo-label">Before</span>
+              {% if report.before_image %}
+                <a class="rd-photo" href="{{ report.before_image.url }}" target="_blank" rel="noopener">
+                  <img src="{{ report.before_image.url }}" alt="Before photo of {{ report.title }}">
+                </a>
+              {% else %}
+                <div class="rd-photo-empty"><div><i class="bi bi-image" aria-hidden="true"></i>No photo uploaded</div></div>
+              {% endif %}
+            </div>
+            <div>
+              <span class="rd-photo-label">After</span>
+              {% if report.after_image %}
+                <a class="rd-photo" href="{{ report.after_image.url }}" target="_blank" rel="noopener">
+                  <img src="{{ report.after_image.url }}" alt="After photo of {{ report.title }}">
+                </a>
+              {% else %}
+                <div class="rd-photo-empty">
+                  <div><i class="bi bi-tools" aria-hidden="true"></i>
+                    {% if report.is_safety %}Not required for safety concerns{% else %}No repair photo yet{% endif %}
+                  </div>
+                </div>
+              {% endif %}
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      <section class="rd-card">
+        <h2 class="rd-card-title"><i class="bi bi-card-text" aria-hidden="true"></i> Description</h2>
+        <div class="rd-card-body"><p class="rd-text">{{ report.description }}</p></div>
+      </section>
+
+      {% if report.resolution_note %}
+      <section class="rd-card rd-resolved">
+        <h2 class="rd-card-title"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Resolution note</h2>
+        <div class="rd-card-body">
+          <p class="rd-text">{{ report.resolution_note }}</p>
+          {% if report.resolved_at %}<div class="rd-small">{{ report.resolved_at|date:"d M Y, H:i" }}</div>{% endif %}
+        </div>
+      </section>
+      {% endif %}
+
+      {% interaction_panel report %}
+
+      {% if can_manage %}
+      <section class="rd-card">
+        <h2 class="rd-card-title"><i class="bi bi-person-gear" aria-hidden="true"></i> Authority actions</h2>
+        <div class="rd-card-body rd-actions">
+          {% if report.verification_status == "pending" %}
+            <a href="{% url 'reports:verify-report' report.pk %}" class="btn btn-success">
+              <i class="bi bi-patch-check"></i> Verify / Reject report
+            </a>
+          {% else %}
+            <a href="{% url 'reports:verify-report' report.pk %}" class="btn btn-outline-secondary btn-sm">
+              Change verification decision
+            </a>
+          {% endif %}
+
+          {% if report.verification_status == "verified" %}
+            <a href="{% url 'reports:update-report-status' report.pk %}" class="btn btn-primary">
+              <i class="bi bi-arrow-repeat"></i> Update status
+            </a>
+          {% endif %}
+        </div>
+      </section>
+      {% endif %}
     </div>
 
-    <div class="card shadow-sm mb-4">
-      <div class="card-header bg-white fw-semibold">Description</div>
-      <div class="card-body">
-        <p class="mb-0" style="white-space: pre-line;">{{ report.description }}</p>
-      </div>
-    </div>
+    <aside class="rd-side">
+      <section class="rd-card">
+        <h2 class="rd-card-title"><i class="bi bi-info-circle" aria-hidden="true"></i> Details</h2>
+        <ul class="rd-facts">
+          <li>
+            <span class="rd-fact-icon"><i class="bi bi-tag" aria-hidden="true"></i></span>
+            <div><span class="rd-fact-label">Category</span>
+              <span class="rd-fact-value">{{ report.category.name }} <small>({{ report.category.get_type_display }})</small></span></div>
+          </li>
+          <li>
+            <span class="rd-fact-icon"><i class="bi bi-map" aria-hidden="true"></i></span>
+            <div><span class="rd-fact-label">Area</span><span class="rd-fact-value">{{ report.area.name }}</span></div>
+          </li>
+          <li>
+            <span class="rd-fact-icon"><i class="bi bi-geo-alt" aria-hidden="true"></i></span>
+            <div><span class="rd-fact-label">Location</span><span class="rd-fact-value">{{ report.location_text }}</span></div>
+          </li>
+          <li>
+            <span class="rd-fact-icon"><i class="bi bi-flag" aria-hidden="true"></i></span>
+            <div><span class="rd-fact-label">Priority score</span><span class="rd-fact-value">{{ report.priority_score|floatformat:1 }}</span></div>
+          </li>
+          <li>
+            <span class="rd-fact-icon"><i class="bi bi-clock-history" aria-hidden="true"></i></span>
+            <div><span class="rd-fact-label">Last updated</span><span class="rd-fact-value">{{ report.updated_at|timesince }} ago</span></div>
+          </li>
+        </ul>
+      </section>
 
-    {% if report.resolution_note %}
-    <div class="card shadow-sm border-success mb-4">
-      <div class="card-header bg-white fw-semibold text-success">Resolution note</div>
-      <div class="card-body"><p class="mb-0" style="white-space: pre-line;">{{ report.resolution_note }}</p>
-        {% if report.resolved_at %}<div class="small text-muted mt-2">{{ report.resolved_at|date:"d M Y, H:i" }}</div>{% endif %}
-      </div>
-    </div>
-    {% endif %}
-
-       {% interaction_panel report %}
-
-        {% if can_manage %}
-    <div class="card shadow-sm mb-4 border-primary">
-      <div class="card-header bg-white fw-semibold">Authority actions</div>
-      <div class="card-body d-flex flex-wrap gap-2">
-        {% if report.verification_status == "pending" %}
-          <a href="{% url 'reports:verify-report' report.pk %}" class="btn btn-success">
-            <i class="bi bi-patch-check"></i> Verify / Reject report
-          </a>
-        {% else %}
-          <a href="{% url 'reports:verify-report' report.pk %}" class="btn btn-outline-secondary btn-sm">
-            Change verification decision
-          </a>
-        {% endif %}
-
-        {% if report.verification_status == "verified" %}
-          <a href="{% url 'reports:update-report-status' report.pk %}" class="btn btn-primary">
-            <i class="bi bi-arrow-repeat"></i> Update status
-          </a>
-        {% endif %}
-      </div>
-    </div>
-    {% endif %}
-  </div>
-
-  <div class="col-lg-5">
-    <div class="card shadow-sm mb-4">
-      <div class="card-header bg-white fw-semibold">Details</div>
-      <ul class="list-group list-group-flush small">
-        <li class="list-group-item"><i class="bi bi-tag"></i> <strong>Category:</strong> {{ report.category.name }} ({{ report.category.get_type_display }})</li>
-        <li class="list-group-item"><i class="bi bi-map"></i> <strong>Area:</strong> {{ report.area.name }}</li>
-        <li class="list-group-item"><i class="bi bi-geo-alt"></i> <strong>Location:</strong> {{ report.location_text }}</li>
-        <li class="list-group-item"><i class="bi bi-flag"></i> <strong>Priority score:</strong> {{ report.priority_score|floatformat:1 }}</li>
-        <li class="list-group-item"><i class="bi bi-arrow-repeat"></i> <strong>Last updated:</strong> {{ report.updated_at|timesince }} ago</li>
-      </ul>
-    </div>
-    <div id="detail-map" data-lat="{{ report.latitude|stringformat:'s' }}" data-lng="{{ report.longitude|stringformat:'s' }}"
-         role="region" aria-label="Map showing the report location"></div>
+      <div id="detail-map" data-lat="{{ report.latitude|stringformat:'s' }}" data-lng="{{ report.longitude|stringformat:'s' }}"
+           role="region" aria-label="Map showing the report location"></div>
+    </aside>
   </div>
 </div>
 {% endblock %}
