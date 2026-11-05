@@ -1,0 +1,8 @@
+{# Dashboard-only status badges. Expects `report`. "Reported" is shown as "Pending" to match the stat card. #}
+{% if report.operational_status == 'resolved' %}<span class="ad-badge ad-badge--resolved">Resolved</span>
+{% elif report.operational_status == 'in_progress' %}<span class="ad-badge ad-badge--progress">In Progress</span>
+{% elif report.operational_status == 'problem_fixed' %}<span class="ad-badge ad-badge--fixed">Problem Fixed</span>
+{% elif report.operational_status == 'closed' %}<span class="ad-badge ad-badge--closed">Closed</span>
+{% else %}<span class="ad-badge ad-badge--pending">Pending</span>{% endif %}
+{% if report.verification_status == 'pending' %}<span class="ad-badge ad-badge--verify"><i class="bi bi-hourglass-split" aria-hidden="true"></i> Needs Verification</span>
+{% elif report.verification_status == 'rejected' %}<span class="ad-badge ad-badge--rejected"><i class="bi bi-x-circle" aria-hidden="true"></i> Rejected</span>{% endif %}
