@@ -1,0 +1,109 @@
+/* ==========================================================================
+   FIX YOUR ELAKA - Community map page: header + search/filter bar
+   Loaded only by core/map.html. Scoped to .cm-page.
+   ========================================================================== */
+
+.cm-page {
+  --cm-ink: var(--fye-navy, #0A192F);
+  --cm-muted: #5d6876;
+  --cm-line: #f0eadf;
+  --cm-field-line: #e6dfd0;
+  --cm-teal: #0f766e;
+  --cm-teal-hover: #0b5f58;
+
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  padding: 28px 20px 48px;
+  color: var(--cm-ink);
+}
+
+/* header */
+.cm-head { margin-bottom: 18px; }
+.cm-title { font-size: clamp(1.6rem, 3vw, 2.1rem); font-weight: 800; letter-spacing: -.02em; margin: 0 0 4px; }
+.cm-sub { margin: 0; color: var(--cm-muted); font-size: .98rem; }
+
+/* filter bar */
+.cm-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)) auto;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid var(--cm-line);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px #0a192f0a;
+}
+.cm-field { position: relative; min-width: 0; }
+.cm-field--search > i {
+  position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+  color: var(--cm-muted); pointer-events: none;
+}
+
+.cm-filters .form-control,
+.cm-filters .form-select {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--cm-field-line);
+  border-radius: 12px;
+  background-color: #fffdf9;
+  color: var(--cm-ink);
+  font-size: .9rem;
+  text-overflow: ellipsis;
+  transition: border-color .2s, box-shadow .2s, background-color .2s;
+}
+.cm-filters .form-control { padding-left: 40px; }
+.cm-filters .form-select { padding-left: 14px; cursor: pointer; }
+.cm-filters .form-control::placeholder { color: #8a93a0; }
+.cm-filters .form-control:hover,
+.cm-filters .form-select:hover { border-color: #d3c6a8; background-color: #fff; }
+.cm-filters .form-control:focus,
+.cm-filters .form-select:focus {
+  background-color: #fff;
+  border-color: var(--cm-teal);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, .18);
+  outline: 0;
+}
+
+/* buttons: pill shape like the rest of the site */
+.cm-actions { display: flex; gap: 8px; }
+.cm-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 46px; padding: 8px 22px;
+  border: 1px solid transparent; border-radius: 999px;
+  font-size: .88rem; font-weight: 700; text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+.cm-btn--teal { background: var(--cm-teal); color: #fff !important; }
+.cm-btn--teal:hover { background: var(--cm-teal-hover); }
+.cm-btn--ghost { background: #fff; color: var(--cm-ink) !important; border-color: var(--cm-field-line); }
+.cm-btn--ghost:hover { background: #fffaf0; border-color: #d9ccb0; }
+.cm-btn:focus-visible { outline: 3px solid #FFB800; outline-offset: 2px; }
+
+/* map + feedback line */
+.cm-page #community-map {
+  height: 540px;
+  min-height: 350px;
+  border: 1px solid var(--cm-line);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px #0a192f0a;
+  overflow: hidden;
+}
+.cm-feedback { margin-top: 10px; font-size: .85rem; color: var(--cm-muted); }
+
+/* responsive */
+@media (max-width: 991.98px) {
+  .cm-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cm-field--search { grid-column: 1 / -1; }
+  .cm-actions { grid-column: 1 / -1; }
+  .cm-actions .cm-btn { flex: 1 1 auto; }
+}
+@media (max-width: 575.98px) {
+  .cm-page { padding: 18px 14px 36px; }
+  .cm-filters { grid-template-columns: 1fr; padding: 12px; }
+  .cm-page #community-map { height: 420px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cm-filters .form-control, .cm-filters .form-select, .cm-btn { transition: none; }
+}
