@@ -1,90 +1,200 @@
 {% extends "base.html" %}
+{% load static dashboard_tags %}
 {% block title %}Authority Dashboard{% endblock %}
 
-{% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-  <h1 class="h3 mb-0">Authority Dashboard</h1>
-  <span class="badge text-bg-success fs-6"><i class="bi bi-patch-check"></i> Approved</span>
-</div>
+{% block extra_head %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'accounts/css/authority-dashboard.css' %}">
+{% endblock %}
 
-<div class="card shadow-sm mb-4">
-  <div class="card-body">
-    <div class="row">
-      <div class="col-md-4 mb-2 mb-md-0">
-        <div class="text-muted small">Department</div>
-        <div class="fw-semibold">{{ profile.department }}</div>
+{% block content %}
+<div class="ad-page">
+
+  {# ------------------------------------------------------------ Header #}
+  <header class="ad-header">
+    <div class="ad-header__top">
+      <div>
+        <h1 class="ad-title"><span id="adGreeting">Welcome</span>, {{ user.first_name|default:user.username }}!</h1>
+        <p class="ad-subtitle">Here's an overview of the community reports assigned to your area.</p>
       </div>
-      <div class="col-md-4 mb-2 mb-md-0">
-        <div class="text-muted small">Assigned area</div>
-        <div class="fw-semibold">{{ profile.assigned_area_name }}</div>
+      <span class="ad-badge ad-badge--approved"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> {{ profile.get_approval_status_display }}</span>
+    </div>
+    <dl class="ad-info">
+      <div><dt>Department</dt><dd>{{ profile.department }}</dd></div>
+      <div><dt>Assigned area</dt><dd>{{ profile.assigned_area_name }}</dd></div>
+      <div><dt>Approved</dt><dd>{{ profile.approved_at|date:"d M Y"|default:"—" }}{% if profile.approved_by %} <span class="ad-muted">by {{ profile.approved_by }}</span>{% endif %}</dd></div>
+    </dl>
+  </header>
+
+  {# ------------------------------------------------------------ Stat cards #}
+  <section class="ad-stats" aria-label="Report statistics">
+    <a class="ad-stat" href="?status=pending#recent-reports">
+      <span class="ad-stat__head"><span class="ad-icon ad-tone--slate"><i class="bi bi-inbox" aria-hidden="true"></i></span><span class="ad-stat__label">Pending Reports</span></span>
+      <span class="ad-stat__value">{{ stats.pending }}</span>
+      <span class="ad-stat__hint">Waiting for action</span>
+    </a>
+    <a class="ad-stat" href="?status=in_progress#recent-reports">
+      <span class="ad-stat__head"><span class="ad-icon ad-tone--amber"><i class="bi bi-tools" aria-hidden="true"></i></span><span class="ad-stat__label">In Progress</span></span>
+      <span class="ad-stat__value">{{ stats.in_progress }}</span>
+      <span class="ad-stat__hint">Being worked on</span>
+    </a>
+    <a class="ad-stat" href="?status=resolved#recent-reports">
+      <span class="ad-stat__head"><span class="ad-icon ad-tone--teal"><i class="bi bi-check2-circle" aria-hidden="true"></i></span><span class="ad-stat__label">Resolved</span></span>
+      <span class="ad-stat__value">{{ stats.resolved }}</span>
+      <span class="ad-stat__hint">Fixed in your area</span>
+    </a>
+    <a class="ad-stat {% if stats.needs_verification %}is-attention{% endif %}" href="?status=needs_verification#recent-reports">
+      <span class="ad-stat__head"><span class="ad-icon ad-tone--coral"><i class="bi bi-patch-question" aria-hidden="true"></i></span><span class="ad-stat__label">Needs Verification</span></span>
+      <span class="ad-stat__value">{{ stats.needs_verification }}</span>
+      <span class="ad-stat__hint">Waiting for your review</span>
+    </a>
+  </section>
+
+  {# ------------------------------------------------------------ Recent reports #}
+  <section class="ad-card" id="recent-reports" aria-labelledby="adReportsTitle">
+    <div class="ad-card__head">
+      <div class="ad-card__titlewrap">
+        <h2 class="ad-card__title" id="adReportsTitle">Recent Reports</h2>
+        <span class="ad-chip"><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ profile.assigned_area_name }}</span>
       </div>
-      <div class="col-md-4">
-        <div class="text-muted small">Approved</div>
-        <div class="fw-semibold">
-          {{ profile.approved_at|date:"d M Y" }}
-          {% if profile.approved_by %}by {{ profile.approved_by }}{% endif %}
+      <a class="ad-btn ad-btn--ghost" href="{% url 'reports:list' %}?scope=area">View All Reports</a>
+    </div>
+
+    <form method="get" action="{% url 'accounts:authority_dashboard' %}#recent-reports" class="ad-filters">
+      <div class="ad-filters__search">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        {{ filter_form.q }}
+      </div>
+      <div>{{ filter_form.status }}</div>
+      <div>{{ filter_form.category }}</div>
+      <div class="ad-filters__actions">
+        <button type="submit" class="ad-btn ad-btn--dark">Apply</button>
+        {% if filters_active %}<a class="ad-btn ad-btn--ghost" href="{% url 'accounts:authority_dashboard' %}#recent-reports">Clear</a>{% endif %}
+      </div>
+    </form>
+
+    {% if recent_reports %}
+      <div class="ad-table-wrap">
+        <table class="ad-table">
+          <thead>
+            <tr>
+              <th scope="col">Report</th>
+              <th scope="col">Category</th>
+              <th scope="col">Location</th>
+              <th scope="col">Submitted</th>
+              <th scope="col">Status</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for report in recent_reports %}
+            <tr>
+              <td data-label="Report" class="ad-cell-title"><a class="ad-report-link" href="{{ report.get_absolute_url }}">{{ report.title }}</a></td>
+              <td data-label="Category"><span class="ad-cat"><i class="bi {{ report.category.icon_class }}" aria-hidden="true"></i> {{ report.category.name }}</span></td>
+              <td data-label="Location" title="{{ report.location_text }}">{{ report.location_text|truncatechars:34 }}</td>
+              <td data-label="Submitted"><span class="ad-date">{{ report.created_at|date:"d M Y" }}</span><span class="ad-muted ad-ago">{{ report.created_at|short_timesince }}</span></td>
+              <td data-label="Status"><div class="ad-badges">{% include "accounts/includes/ad_status_badges.html" %}</div></td>
+              <td class="ad-actions">
+                {% if report.verification_status == 'pending' %}<a class="ad-btn ad-btn--sm ad-btn--ghost" href="{% url 'reports:verify-report' report.pk %}">Verify</a>{% endif %}
+                <a class="ad-btn ad-btn--sm ad-btn--dark" href="{{ report.get_absolute_url }}" aria-label="View details for {{ report.title }}">View</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ad-pager">
+        <span class="ad-muted">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Report pages">
+          <ul class="pagination pagination-sm mb-0">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}#recent-reports">Previous</a></li>{% endif %}
+            <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}#recent-reports">Next</a></li>{% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="ad-empty">
+        <i class="bi {% if filters_active %}bi-search{% else %}bi-clipboard-check{% endif %}" aria-hidden="true"></i>
+        {% if filters_active %}
+          <p class="ad-empty__title">No reports match your filters</p>
+          <p class="ad-muted">Try a different search term or clear the filters.</p>
+          <a class="ad-btn ad-btn--ghost" href="{% url 'accounts:authority_dashboard' %}#recent-reports">Clear filters</a>
+        {% else %}
+          <p class="ad-empty__title">No reports in {{ profile.assigned_area_name }} yet</p>
+          <p class="ad-muted">New reports from citizens in your area will appear here.</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </section>
+
+  {# ------------------------------------------------------------ Area performance #}
+  <section class="ad-card" aria-labelledby="adPerfTitle">
+    <div class="ad-card__head">
+      <div class="ad-card__titlewrap">
+        <h2 class="ad-card__title" id="adPerfTitle">Area Performance</h2>
+        <span class="ad-chip"><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ profile.assigned_area_name }}</span>
+      </div>
+    </div>
+
+    <div class="ad-perf">
+      <div class="ad-ring" role="img" aria-label="Resolution rate: {% if performance.rate is None %}no reports yet{% else %}{{ performance.rate|floatformat:'-1u' }} percent{% endif %}">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="ad-ring__track" cx="60" cy="60" r="52" pathLength="100"/>
+          {% if performance.rate %}<circle class="ad-ring__bar" cx="60" cy="60" r="52" pathLength="100" stroke-dasharray="{{ performance.rate|floatformat:'1u' }} 100"/>{% endif %}
+        </svg>
+        <div class="ad-ring__label">
+          <strong>{% if performance.rate is None %}—{% else %}{{ performance.rate|floatformat:"-1u" }}%{% endif %}</strong>
+          <span>Resolution rate</span>
         </div>
       </div>
+
+      <dl class="ad-metrics">
+        <div><dt>Total reports received</dt><dd>{{ performance.total }}</dd></div>
+        <div><dt>Resolved</dt><dd>{{ performance.resolved }}</dd></div>
+        <div><dt>Pending</dt><dd>{{ performance.pending }}</dd></div>
+        <div><dt>Average resolution time</dt><dd>{{ performance.avg_resolution|default:"—" }}</dd></div>
+      </dl>
     </div>
-  </div>
-</div>
 
-<div class="row g-3 mb-4">
-  <div class="col-sm-6 col-lg-3">
-    <div class="card shadow-sm h-100"><div class="card-body">
-      <div class="text-muted small">Pending reports</div>
-      <div class="display-6">{{ stats.pending }}</div>
-    </div></div>
-  </div>
-  <div class="col-sm-6 col-lg-3">
-    <div class="card shadow-sm h-100"><div class="card-body">
-      <div class="text-muted small">In progress</div>
-      <div class="display-6">{{ stats.in_progress }}</div>
-    </div></div>
-  </div>
-  <div class="col-sm-6 col-lg-3">
-    <div class="card shadow-sm h-100"><div class="card-body">
-      <div class="text-muted small">Resolved</div>
-      <div class="display-6">{{ stats.resolved }}</div>
-    </div></div>
-  </div>
-  <div class="col-sm-6 col-lg-3">
-    <div class="card shadow-sm h-100 {% if stats.needs_verification %}border-warning{% endif %}"><div class="card-body">
-      <div class="text-muted small">Needs verification</div>
-      <div class="display-6">{{ stats.needs_verification }}</div>
-    </div></div>
-  </div>
-</div>
-
-<div class="card shadow-sm">
-  <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
-    <span>Recent reports in {{ profile.assigned_area_name }}</span>
-    <a class="btn btn-sm btn-outline-primary" href="{% url 'reports:list' %}?scope=area">View all</a>
-  </div>
-
-  {% if recent_reports %}
-    <div class="list-group list-group-flush">
-      {% for report in recent_reports %}
-        <a href="{{ report.get_absolute_url }}"
-           class="list-group-item list-group-item-action d-flex flex-wrap justify-content-between align-items-center gap-2">
-          <div>
-            <div class="fw-semibold">{{ report.title }}</div>
-            <div class="small text-muted">
-              {{ report.category.name }} &middot; {{ report.location_text }} &middot;
-              {{ report.created_at|timesince }} ago
-            </div>
+    {% if show_monthly %}
+    <div class="ad-monthly">
+      <div class="ad-monthly__head">
+        <h3>Last 6 months</h3>
+        <ul class="ad-legend">
+          <li><span class="ad-swatch ad-swatch--received"></span> Received</li>
+          <li><span class="ad-swatch ad-swatch--resolved"></span> Resolved</li>
+        </ul>
+      </div>
+      <div class="ad-bars">
+        {% for m in performance.monthly %}
+        <div class="ad-bars__col" title="{{ m.label }} {{ m.year }}: {{ m.received }} received, {{ m.resolved }} resolved">
+          <div class="ad-bars__pair">
+            <span class="ad-bar ad-bar--received" style="height: {{ m.received_pct }}%"><em>{{ m.received }}</em></span>
+            <span class="ad-bar ad-bar--resolved" style="height: {{ m.resolved_pct }}%"><em>{{ m.resolved }}</em></span>
           </div>
-          <div class="d-flex gap-1">
-            {% include "reports/includes/status_badges.html" %}
-          </div>
-        </a>
-      {% endfor %}
+          <span class="ad-bars__label">{{ m.label }}</span>
+        </div>
+        {% endfor %}
+      </div>
     </div>
-  {% else %}
-    <div class="card-body text-center text-muted py-5">
-      <i class="bi bi-clipboard-check fs-1"></i>
-      <p class="mb-0 mt-2">No reports in {{ profile.assigned_area_name }} yet.</p>
-    </div>
-  {% endif %}
+    {% endif %}
+
+    <p class="ad-note">Resolution rate is resolved reports divided by all reports received in your area. Average resolution time covers resolved reports only.</p>
+  </section>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var el = document.getElementById('adGreeting');
+    if (!el) return;
+    var h = new Date().getHours();
+    el.textContent = h < 12 ? 'Good Morning' : (h < 18 ? 'Good Afternoon' : 'Good Evening');
+  })();
+</script>
 {% endblock %}

@@ -522,6 +522,44 @@
             align-items: flex-start;
         }
     }
+    /* ===== COMPACT FOOTER (spacing only; structure/branding unchanged) =====
+       Every selector is scoped to .fye-footer on purpose: some class names
+       (.fye-logo, .fye-links) are also used by the navbar. */
+    .fye-footer .fye-footer-main {
+        padding: 40px 32px 26px;
+        gap: 28px;
+        align-items: start;
+    }
+    .fye-footer .fye-tagline { margin: 16px 0 10px; }
+    .fye-footer .fye-brand-description { line-height: 1.7; }
+    .fye-footer .fye-socials { margin-top: 16px; }
+    .fye-footer .fye-column h3 { margin: 0 0 16px; font-size: 16px; }
+    .fye-footer .fye-heading-line { margin-top: -8px; margin-bottom: 14px; }
+    .fye-footer .fye-links { gap: 12px; }
+    .fye-footer .fye-contact-list { gap: 14px; }
+    .fye-footer .fye-contact-icon { width: 38px; height: 38px; }
+    .fye-footer .fye-newsletter p { margin-bottom: 14px; line-height: 1.7; }
+    .fye-footer .fye-newsletter form { gap: 10px; }
+    .fye-footer .fye-email-wrap,
+    .fye-footer .fye-subscribe { min-height: 44px; }
+    .fye-footer .fye-mission-note { margin-top: 16px; padding: 12px 14px; }
+    .fye-footer .fye-landscape { height: 64px; margin-top: 0; }
+    .fye-footer .fye-city { bottom: 8px; transform: scale(.85); transform-origin: right bottom; }
+    .fye-footer .fye-footer-bottom-inner { min-height: 0; padding: 12px 32px; }
+
+    @media (max-width: 1150px) {
+        .fye-footer .fye-footer-main { gap: 32px 28px; }
+    }
+    @media (max-width: 720px) {
+        .fye-footer .fye-footer-main { padding: 32px 22px 22px; gap: 26px 22px; }
+        .fye-footer .fye-landscape { height: 56px; }
+        .fye-footer .fye-footer-bottom-inner { padding: 12px 22px; }
+    }
+    @media (max-width: 440px) {
+        .fye-footer .fye-footer-main { padding: 28px 20px 20px; gap: 24px; }
+        .fye-footer .fye-column h3 { margin-bottom: 14px; }
+        .fye-footer .fye-links { gap: 11px; }
+    }
 </style>
 
 <footer class="fye-footer">
@@ -579,7 +617,7 @@
 
             <div class="fye-links">
                 <a href="{% url 'home' %}">Home <span class="fye-arrow">→</span></a>
-                <a href="#features">Features <span class="fye-arrow">→</span></a>
+
                 <a href="{% url 'contact' %}">Contact Us <span class="fye-arrow">→</span></a>
             </div>
         </div>

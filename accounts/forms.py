@@ -116,3 +116,41 @@ class CustomUserChangeForm(UserChangeForm):
     class Meta(UserChangeForm.Meta):
         model = User
         fields = "__all__"
+
+class AuthorityReportFilterForm(forms.Form):
+    """Search + filters for the 'Recent Reports' table on the authority dashboard."""
+
+    STATUS_CHOICES = [
+        ("", "All statuses"),
+        ("pending", "Pending"),
+        ("in_progress", "In Progress"),
+        ("problem_fixed", "Problem Fixed"),
+        ("resolved", "Resolved"),
+        ("closed", "Closed"),
+        ("needs_verification", "Needs Verification"),
+    ]
+
+    q = forms.CharField(
+        required=False,
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "Search by title, location or category",
+            "aria-label": "Search reports",
+        }),
+    )
+    status = forms.ChoiceField(
+        required=False,
+        choices=STATUS_CHOICES,
+        widget=forms.Select(attrs={"class": "form-select", "aria-label": "Filter by status"}),
+    )
+    category = forms.ModelChoiceField(
+        queryset=None,  # set in __init__: only categories used in the authority's area
+        required=False,
+        empty_label="All categories",
+        widget=forms.Select(attrs={"class": "form-select", "aria-label": "Filter by category"}),
+    )
+
+    def __init__(self, *args, category_queryset=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["category"].queryset = category_queryset

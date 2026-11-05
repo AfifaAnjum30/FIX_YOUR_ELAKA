@@ -93,42 +93,324 @@ class DashboardRedirectView(LoginRequiredMixin, RedirectView):
 
 class CitizenDashboardView(CitizenRequiredMixin, TemplateView):
     template_name = "accounts/citizen_dashboard.html"
+    reports_shown = 6      # recent reports on the dashboard ("View all" lists the rest)
+    activity_shown = 6
+
+    # Note shown under the tracker; describes the current state only (no dates invented).
+    PROGRESS_NOTES = {
+        "pending": "Waiting for an authority to review this report.",
+        "reported": "Verified. Waiting for work to begin.",
+        "in_progress": "Work on this issue is under way.",
+        "problem_fixed": "The fix is done and awaiting final resolution.",
+    }
+
+    @classmethod
+    def _progress(cls, report):
+        """
+        Build the progress tracker from the report's real status fields.
+        Steps follow the backend workflow: Submitted -> Verified -> then the
+        report's own operational steps (physical reports include 'Problem Fixed',
+        safety reports end at 'Closed'). There is no 'Assigned' status in the
+        backend, so none is shown.
+        """
+        from reports.models import Report
+
+        labels = dict(Report.OPERATIONAL_STATUS)
+
+        if report.verification_status == "rejected":
+            verification = getattr(report, "verification", None)
+            return {
+                "steps": [
+                    {"label": "Submitted", "state": "done"},
+                    {"label": "Rejected", "state": "rejected"},
+                ],
+                "note": "This report was rejected by the authority.",
+                "remarks": (verification.remarks if verification else ""),
+            }
+
+        stages = list(report.workflow_steps)  # e.g. reported, in_progress, ..., resolved
+        if report.operational_status not in stages:
+            stages.append(report.operational_status)  # e.g. admin-set 'closed'
+        steps = [("Submitted", "submitted"), ("Verified", "verified")]
+        steps += [(labels[s], s) for s in stages[1:]]
+
+        if report.verification_status == "pending":
+            reached, note_key = 0, "pending"
+        else:
+            reached = 1 + stages.index(report.operational_status)
+            note_key = report.operational_status
+
+        finished = report.operational_status in (Report.RESOLVED, Report.CLOSED) and (
+            report.verification_status == "verified"
+        )
+        built = []
+        for i, (label, _key) in enumerate(steps):
+            if finished or i < reached:
+                state = "done"
+            elif i == reached:
+                state = "current"
+            else:
+                state = "todo"
+            built.append({"label": label, "state": state})
+
+        return {"steps": built, "note": "" if finished else cls.PROGRESS_NOTES.get(note_key, "")}
+
+    def _activity(self, user):
+        """
+        Recent activity built from real records only: report submissions,
+        verification decisions and status changes. (There is no notification
+        model in the project, so nothing here is a push notification.)
+        """
+        from reports.models import Report, ReportStatusHistory, Verification
+
+        n = self.activity_shown
+        events = []
+
+        for r in Report.objects.filter(reporter=user).order_by("-created_at")[:n]:
+            events.append({
+                "when": r.created_at, "report": r, "icon": "bi-send-check", "tone": "teal",
+                "prefix": "You submitted ", "suffix": "",
+            })
+
+        decisions = {
+            "verified": ("bi-patch-check-fill", "sage", " was verified"),
+            "rejected": ("bi-x-circle-fill", "danger", " was rejected"),
+        }
+        for v in (
+            Verification.objects.filter(report__reporter=user, status__in=decisions)
+            .select_related("report")
+            .order_by("-verified_at")[:n]
+        ):
+            icon, tone, suffix = decisions[v.status]
+            events.append({
+                "when": v.verified_at, "report": v.report, "icon": icon, "tone": tone,
+                "prefix": "", "suffix": suffix,
+            })
+
+        changes = {
+            Report.IN_PROGRESS: ("bi-tools", "amber", " is now in progress"),
+            Report.PROBLEM_FIXED: ("bi-wrench-adjustable", "sky", " was marked as fixed"),
+            Report.RESOLVED: ("bi-check2-circle", "teal", " has been resolved"),
+            Report.CLOSED: ("bi-lock", "slate", " was closed"),
+        }
+        labels = dict(Report.OPERATIONAL_STATUS)
+        for h in (
+            ReportStatusHistory.objects.filter(report__reporter=user)
+            .select_related("report")
+            .order_by("-changed_at")[:n]
+        ):
+            icon, tone, suffix = changes.get(
+                h.new_status,
+                ("bi-arrow-right-circle", "slate", f" moved to {labels.get(h.new_status, h.new_status)}"),
+            )
+            events.append({
+                "when": h.changed_at, "report": h.report, "icon": icon, "tone": tone,
+                "prefix": "", "suffix": suffix,
+            })
+
+        events.sort(key=lambda e: e["when"], reverse=True)
+        return events[:n]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        from reports.models import Report  # local import avoids circular imports
+        from django.db.models import Count, Q
 
-        context["my_reports"] = (
-            Report.objects.filter(reporter=self.request.user)
-            .select_related("category", "area")
-            .order_by("-created_at")
+        from reports.models import Report
+
+        user = self.request.user
+        mine = Report.objects.filter(reporter=user)
+
+        # Recent reports (existing context name kept: my_reports).
+        recent = list(
+            mine.select_related("category", "area", "verification").order_by("-created_at")[
+                : self.reports_shown
+            ]
         )
+        for report in recent:
+            report.progress = self._progress(report)
+        context["my_reports"] = recent
+
+        # Personal impact: counted from the citizen's actual reports.
+        agg = mine.aggregate(
+            total=Count("id"),
+            resolved=Count("id", filter=Q(operational_status=Report.RESOLVED)),
+            in_progress=Count("id", filter=Q(operational_status=Report.IN_PROGRESS)),
+        )
+        context["my_reports_total"] = agg["total"]
+        context["impact"] = {
+            **agg,
+            # None when nothing has been reported, so no fake 0% is shown.
+            "rate": round(agg["resolved"] / agg["total"] * 100) if agg["total"] else None,
+        }
+        context["activity"] = self._activity(user)
         return context
 
 
 class AuthorityDashboardView(ApprovedAuthorityRequiredMixin, TemplateView):
     template_name = "accounts/authority_dashboard.html"
+    paginate_by = 8
+    MONTHS_SHOWN = 6
 
+    # ---- helpers ------------------------------------------------------------
+    @staticmethod
+    def _format_duration(delta):
+        """timedelta -> '2.5 days' / '6 hrs' / '20 min' (None stays None)."""
+        if delta is None:
+            return None
+        seconds = delta.total_seconds()
+        if seconds >= 86400:
+            value, unit = seconds / 86400, "day"
+        elif seconds >= 3600:
+            value, unit = seconds / 3600, "hr"
+        else:
+            value, unit = max(seconds / 60, 1), "min"
+        text = f"{value:.1f}".rstrip("0").rstrip(".")
+        plural = "s" if unit in ("day", "hr") and text != "1" else ""
+        return f"{text} {unit}{plural}"
+
+    def _monthly_overview(self, area_reports):
+        """Reports received vs. resolved per month, from real records only."""
+        from datetime import datetime
+
+        from django.db.models import Count
+        from django.db.models.functions import TruncMonth
+        from django.utils import timezone
+
+        from reports.models import Report
+
+        today = timezone.localdate()
+        months = []
+        year, month = today.year, today.month
+        for _ in range(self.MONTHS_SHOWN):
+            months.append((year, month))
+            month -= 1
+            if month == 0:
+                year, month = year - 1, 12
+        months.reverse()
+        start = timezone.make_aware(datetime(months[0][0], months[0][1], 1))
+
+        def per_month(qs, field):
+            rows = (
+                qs.filter(**{f"{field}__gte": start})
+                .annotate(m=TruncMonth(field))
+                .order_by("m")  # clears Report.Meta.ordering so GROUP BY works
+                .values("m")
+                .annotate(n=Count("id"))
+            )
+            return {(r["m"].year, r["m"].month): r["n"] for r in rows}
+
+        received = per_month(area_reports, "created_at")
+        resolved = per_month(
+            area_reports.filter(operational_status=Report.RESOLVED), "resolved_at"
+        )
+
+        peak = max([1, *received.values(), *resolved.values()])
+        data = []
+        for y, m in months:
+            r, s = received.get((y, m), 0), resolved.get((y, m), 0)
+            data.append({
+                "label": datetime(y, m, 1).strftime("%b"),
+                "year": y,
+                "received": r,
+                "resolved": s,
+                "received_pct": round(r / peak * 100),
+                "resolved_pct": round(s / peak * 100),
+            })
+        return data
+
+    # ---- context ------------------------------------------------------------
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        from django.db.models import Count, Q
+        from django.core.paginator import Paginator
+        from django.db.models import Avg, Count, DurationField, ExpressionWrapper, F, Q
+
+        from core.models import Category
         from reports.models import Report
         from reports.permissions import reports_in_authority_area
 
-        context["profile"] = self.request.user.authority_profile
+        from .forms import AuthorityReportFilterForm
 
+        profile = self.request.user.authority_profile
+        context["profile"] = profile
+
+        # Single source of truth: only this authority's own area (existing rule).
         area_reports = reports_in_authority_area(self.request.user)
 
-        context["stats"] = area_reports.aggregate(
+        # --- stat cards + performance numbers (same status logic as before) ---
+        agg = area_reports.aggregate(
+            total=Count("id"),
             pending=Count("id", filter=Q(operational_status=Report.REPORTED)),
             in_progress=Count("id", filter=Q(operational_status=Report.IN_PROGRESS)),
             resolved=Count("id", filter=Q(operational_status=Report.RESOLVED)),
             needs_verification=Count("id", filter=Q(verification_status="pending")),
+            avg_resolution=Avg(
+                ExpressionWrapper(F("resolved_at") - F("created_at"), output_field=DurationField()),
+                filter=Q(operational_status=Report.RESOLVED, resolved_at__isnull=False),
+            ),
+        )
+        context["stats"] = {
+            k: agg[k] for k in ("pending", "in_progress", "resolved", "needs_verification")
+        }
+        total, resolved = agg["total"], agg["resolved"]
+        context["performance"] = {
+            "total": total,
+            "resolved": resolved,
+            "pending": agg["pending"],
+            # None when there are no reports, so the template never shows a fake 0%.
+            "rate": round(resolved / total * 100, 1) if total else None,
+            "avg_resolution": self._format_duration(agg["avg_resolution"]),
+            "monthly": self._monthly_overview(area_reports),
+        }
+        context["show_monthly"] = any(
+            m["received"] or m["resolved"] for m in context["performance"]["monthly"]
         )
 
-        context["recent_reports"] = area_reports.order_by("-created_at")[:10]
-        return context
+        # --- Recent Reports: search, filters, pagination ---
+        categories = Category.objects.filter(
+            pk__in=area_reports.order_by().values("category_id")
+        )
+        form = AuthorityReportFilterForm(self.request.GET, category_queryset=categories)
+        form.is_valid()  # invalid fields are simply left out of cleaned_data
+        data = form.cleaned_data
 
+        status_filters = {
+            "pending": Q(operational_status=Report.REPORTED),
+            "in_progress": Q(operational_status=Report.IN_PROGRESS),
+            "problem_fixed": Q(operational_status=Report.PROBLEM_FIXED),
+            "resolved": Q(operational_status=Report.RESOLVED),
+            "closed": Q(operational_status=Report.CLOSED),
+            "needs_verification": Q(verification_status="pending"),
+        }
+
+        reports = area_reports
+        if data.get("q"):
+            term = data["q"].strip()
+            reports = reports.filter(
+                Q(title__icontains=term)
+                | Q(location_text__icontains=term)
+                | Q(category__name__icontains=term)
+                | Q(description__icontains=term)
+            )
+        if data.get("status") in status_filters:
+            reports = reports.filter(status_filters[data["status"]])
+        if data.get("category"):
+            reports = reports.filter(category=data["category"])
+
+        page_obj = Paginator(reports.order_by("-created_at", "-pk"), self.paginate_by).get_page(
+            self.request.GET.get("page")
+        )
+
+        params = self.request.GET.copy()
+        params.pop("page", None)
+
+        context.update(
+            recent_reports=page_obj,
+            page_obj=page_obj,
+            filter_form=form,
+            filters_active=bool(data.get("q") or data.get("status") or data.get("category")),
+            querystring=params.urlencode(),
+        )
+        return context
 class PendingApprovalView(AuthorityRequiredMixin, TemplateView):
     """Shown to authorities whose account is pending or rejected."""
 

@@ -1,67 +1,146 @@
 {% extends "base.html" %}
+{% load static dashboard_tags %}
 {% block title %}Citizen Dashboard{% endblock %}
 
+{% block extra_head %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'accounts/css/citizen-dashboard.css' %}">
+{% endblock %}
+
 {% block content %}
-<h1 class="h3 mb-4">Hello, {{ user.first_name|default:user.username }} 👋</h1>
+<div class="cd-page">
 
-<div class="row g-3 mb-4">
-  <div class="col-sm-6 col-lg-3">
-    <div class="card shadow-sm h-100"><div class="card-body">
-      <div class="text-muted small">Total reports</div>
-      <div class="display-6">{{ user.total_reports_count }}</div>
-    </div></div>
-  </div>
-  <div class="col-sm-6 col-lg-3">
-    <div class="card shadow-sm h-100"><div class="card-body">
-      <div class="text-muted small">Verified genuine reports</div>
-      <div class="display-6">{{ user.verified_reports_count }}</div>
-    </div></div>
-  </div>
-  <div class="col-sm-6 col-lg-3">
-    <div class="card shadow-sm h-100 border-primary"><div class="card-body">
-      <div class="text-muted small">Reporter Trust Score</div>
-      <div class="display-6 text-primary">{{ user.trust_score_display }}</div>
-    </div></div>
-  </div>
-  <div class="col-sm-6 col-lg-3">
-    <div class="card shadow-sm h-100"><div class="card-body">
-      <div class="text-muted small">Account type</div>
-      <div class="fs-4"><span class="badge text-bg-primary">{{ user.get_role_display }}</span></div>
-    </div></div>
-  </div>
-</div>
+  {# ------------------------------------------------------------ Welcome #}
+  <header class="cd-welcome">
+    <h1 class="cd-title">Hello, {{ user.first_name|default:user.username }} 👋</h1>
+    <p class="cd-subtitle">Here's what's happening with your community.</p>
+  </header>
 
-<div class="card shadow-sm">
-  <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
-    <span>My reports</span>
-    <a class="btn btn-sm btn-primary" href="{% url 'reports:create' %}">
-      <i class="bi bi-plus-circle"></i> Report a problem
-    </a>
-  </div>
+  {# ------------------------------------------------------------ Stat cards #}
+  <section class="cd-stats" aria-label="Your account summary">
+    <div class="cd-stat cd-tint--peach">
+      <span class="cd-stat__icon"><i class="bi bi-clipboard-data" aria-hidden="true"></i></span>
+      <span class="cd-stat__label">Total reports</span>
+      <span class="cd-stat__value">{{ user.total_reports_count }}</span>
+      <span class="cd-stat__hint">Issues you have submitted</span>
+    </div>
+    <div class="cd-stat cd-tint--sage">
+      <span class="cd-stat__icon"><i class="bi bi-patch-check" aria-hidden="true"></i></span>
+      <span class="cd-stat__label">Verified genuine reports</span>
+      <span class="cd-stat__value">{{ user.verified_reports_count }}</span>
+      <span class="cd-stat__hint">Confirmed by an authority</span>
+    </div>
+    <div class="cd-stat cd-tint--teal">
+      <span class="cd-stat__icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
+      <span class="cd-stat__label">Reporter Trust Score</span>
+      <span class="cd-stat__value {% if user.total_reports_count == 0 %}is-text{% endif %}">{{ user.trust_score_display }}</span>
+      <span class="cd-stat__hint">Verified reports ÷ total reports</span>
+    </div>
+    <div class="cd-stat cd-tint--sky">
+      <span class="cd-stat__icon"><i class="bi bi-person-badge" aria-hidden="true"></i></span>
+      <span class="cd-stat__label">Account type</span>
+      <span class="cd-stat__value is-text">{{ user.get_role_display }}</span>
+      <span class="cd-stat__hint">Your role on Fix Your Elaka</span>
+    </div>
+  </section>
 
-  {% if my_reports %}
-    <div class="list-group list-group-flush">
-      {% for report in my_reports %}
-        <a href="{{ report.get_absolute_url }}"
-           class="list-group-item list-group-item-action d-flex flex-wrap justify-content-between align-items-center gap-2">
-          <div>
-            <div class="fw-semibold">{{ report.title }}</div>
-            <div class="small text-muted">
-              {{ report.category.name }} &middot; {{ report.area.name }} &middot;
-              {{ report.created_at|timesince }} ago
+  <div class="cd-layout">
+
+    {# ---------------------------------------------------------- My reports #}
+    <section class="cd-card" aria-labelledby="cdReportsTitle">
+      <div class="cd-card__head">
+        <div>
+          <h2 class="cd-card__title" id="cdReportsTitle">My Reports</h2>
+          {% if my_reports_total %}<p class="cd-muted cd-card__sub">Showing {{ my_reports|length }} of {{ my_reports_total }}</p>{% endif %}
+        </div>
+        <div class="cd-card__actions">
+          {% if my_reports_total > my_reports|length %}<a class="cd-btn cd-btn--ghost" href="{% url 'reports:list' %}?scope=mine">View all</a>{% endif %}
+          <a class="cd-btn cd-btn--teal" href="{% url 'reports:create' %}"><i class="bi bi-plus-circle" aria-hidden="true"></i> Report a problem</a>
+        </div>
+      </div>
+
+      {% if my_reports %}
+        <ul class="cd-reports">
+          {% for report in my_reports %}
+          <li class="cd-report">
+            <a class="cd-report__thumb" href="{{ report.get_absolute_url }}" tabindex="-1" aria-hidden="true">
+              {% if report.before_image %}<img src="{{ report.before_image.url }}" alt="" loading="lazy">{% else %}<i class="bi {{ report.category.icon_class }}"></i>{% endif %}
+            </a>
+
+            <div class="cd-report__body">
+              <h3 class="cd-report__title"><a href="{{ report.get_absolute_url }}">{{ report.title }}</a></h3>
+              <ul class="cd-meta">
+                <li><i class="bi {{ report.category.icon_class }}" aria-hidden="true"></i> {{ report.category.name }}</li>
+                <li title="{{ report.location_text }}"><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ report.area.name }} · {{ report.location_text|truncatechars:36 }}</li>
+                <li><i class="bi bi-clock" aria-hidden="true"></i> {{ report.created_at|date:"d M Y, H:i" }}</li>
+              </ul>
+              <div class="cd-report__badges">{% include "reports/includes/status_badges.html" %}</div>
             </div>
-          </div>
-          <div class="d-flex gap-1">
-            {% include "reports/includes/status_badges.html" %}
-          </div>
-        </a>
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="card-body text-center text-muted py-5">
-      <i class="bi bi-clipboard-data fs-1"></i>
-      <p class="mb-0 mt-2">You haven't submitted any reports yet.</p>
-    </div>
-  {% endif %}
+
+            <a class="cd-btn cd-btn--ghost cd-report__cta" href="{{ report.get_absolute_url }}" aria-label="View details for {{ report.title }}">View details</a>
+
+            {# Progress tracker (real status values) #}
+            <div class="cd-report__progress">
+              <ol class="cd-track" aria-label="Progress of {{ report.title }}">
+                {% for step in report.progress.steps %}
+                <li class="is-{{ step.state }}">
+                  <span class="cd-dot">{% if step.state == 'done' %}<i class="bi bi-check-lg" aria-hidden="true"></i>{% elif step.state == 'rejected' %}<i class="bi bi-x-lg" aria-hidden="true"></i>{% endif %}</span>
+                  <span class="cd-track__label">{{ step.label }}</span>
+                  <span class="visually-hidden">{% if step.state == 'done' %}(completed){% elif step.state == 'current' %}(current stage){% elif step.state == 'rejected' %}(rejected){% else %}(not reached yet){% endif %}</span>
+                </li>
+                {% endfor %}
+              </ol>
+              {% if report.progress.note %}<p class="cd-track__note {% if report.progress.steps.1.state == 'rejected' %}is-rejected{% endif %}">{{ report.progress.note }}{% if report.progress.remarks %} <strong>Reason:</strong> {{ report.progress.remarks|truncatechars:140 }}{% endif %}</p>{% endif %}
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="cd-empty">
+          <i class="bi bi-clipboard-data" aria-hidden="true"></i>
+          <p class="cd-empty__title">You haven't submitted any reports yet.</p>
+          <p class="cd-muted">Spot something in your neighbourhood that needs fixing? Report it and track it here.</p>
+          <a class="cd-btn cd-btn--teal" href="{% url 'reports:create' %}"><i class="bi bi-plus-circle" aria-hidden="true"></i> Report a problem</a>
+        </div>
+      {% endif %}
+    </section>
+
+    {# ---------------------------------------------------------- Sidebar #}
+    <aside class="cd-side">
+
+      <section class="cd-card" aria-labelledby="cdImpactTitle">
+        <h2 class="cd-card__title" id="cdImpactTitle">Your Impact</h2>
+        <dl class="cd-impact">
+          <div><dt>Reported</dt><dd>{{ impact.total }}</dd></div>
+          <div><dt>Resolved</dt><dd>{{ impact.resolved }}</dd></div>
+          <div><dt>In progress</dt><dd>{{ impact.in_progress }}</dd></div>
+        </dl>
+        <div class="cd-rate">
+          <div class="cd-rate__row"><span>Resolution rate</span><strong>{% if impact.rate is None %}—{% else %}{{ impact.rate }}%{% endif %}</strong></div>
+          <div class="cd-rate__bar" role="progressbar" aria-label="Share of your reports that are resolved" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ impact.rate|default:0 }}"><span style="width: {{ impact.rate|default:0 }}%"></span></div>
+          <p class="cd-muted cd-rate__note">{% if impact.rate is None %}Submit a report to see how many get resolved.{% else %}Share of your reports marked Resolved.{% endif %}</p>
+        </div>
+      </section>
+
+      <section class="cd-card" aria-labelledby="cdActivityTitle">
+        <h2 class="cd-card__title" id="cdActivityTitle">Recent Activity</h2>
+        {% if activity %}
+          <ul class="cd-activity">
+            {% for e in activity %}
+            <li>
+              <span class="cd-activity__icon cd-tone--{{ e.tone }}"><i class="bi {{ e.icon }}" aria-hidden="true"></i></span>
+              <div>
+                <p class="cd-activity__text">{{ e.prefix }}<a href="{{ e.report.get_absolute_url }}">{{ e.report.title|truncatechars:42 }}</a>{{ e.suffix }}</p>
+                <time class="cd-muted cd-activity__time" datetime="{{ e.when|date:'c' }}" title="{{ e.when|date:'d M Y, H:i' }}">{{ e.when|short_timesince }}</time>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="cd-muted cd-activity__empty">No activity yet. Updates on your reports will appear here.</p>
+        {% endif %}
+      </section>
+
+    </aside>
+  </div>
 </div>
 {% endblock %}
