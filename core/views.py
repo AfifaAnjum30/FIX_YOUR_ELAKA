@@ -1,11 +1,20 @@
+from datetime import timedelta
+
+from django.contrib import messages
+from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from django.views.generic import TemplateView, ListView
-from .forms import ReportFilterForm
+from django.utils import timezone
+from django.views.generic import ListView, TemplateView
+
+from .forms import ContactForm, ReportFilterForm
 from .models import Area, Category
 from .services import public_reports
-from django.contrib import messages
-from .forms import ContactForm
+
+# Same visibility rule as the public reports list: verified + non-safety.
+PUBLIC_TYPES = ['infrastructure', 'public_utilities', 'environment']
+OPEN_STATUSES = ['reported', 'in_progress']
+
 
 class HomeView(TemplateView):
     template_name = 'core/home.html'
@@ -27,11 +36,27 @@ class AreaListView(ListView):
     context_object_name = 'areas'
     paginate_by = 12
 
+    def get_queryset(self):
+        week_ago = timezone.now() - timedelta(days=7)
+        public = Q(reports__verification_status='verified', reports__category__type__in=PUBLIC_TYPES)
+        return Area.objects.annotate(
+            open_count=Count('reports', filter=public & Q(reports__operational_status__in=OPEN_STATUSES), distinct=True),
+            new_count=Count('reports', filter=public & Q(reports__created_at__gte=week_ago), distinct=True),
+        ).order_by('name')
+
 
 class CategoryListView(ListView):
     model = Category
     template_name = 'core/categories.html'
     context_object_name = 'categories'
+
+    def get_queryset(self):
+        week_ago = timezone.now() - timedelta(days=7)
+        public = Q(type__in=PUBLIC_TYPES, reports__verification_status='verified')
+        return Category.objects.annotate(
+            open_count=Count('reports', filter=public & Q(reports__operational_status__in=OPEN_STATUSES), distinct=True),
+            new_count=Count('reports', filter=public & Q(reports__created_at__gte=week_ago), distinct=True),
+        )
 
 
 class MapView(TemplateView):
@@ -63,8 +88,6 @@ def map_data(request):
                            'category': report.category.name, 'status': report.get_operational_status_display()},
         })
     return JsonResponse({'type': 'FeatureCollection', 'features': features})
-
-
 
 
 def contact_view(request):

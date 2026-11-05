@@ -1,6 +1,38 @@
 {% extends "base.html" %}
-{% block title %}Categories | Fixyour elaka{% endblock %}
-{% block content %}<h1 class="h2 mb-4">Report categories</h1><div class="row g-3">
-{% for category in categories %}<div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm"><div class="card-body"><div class="small text-muted">{{ category.get_type_display }}</div><h2 class="h5">{{ category.name }}</h2><p>{{ category.description|default:'Local community concern' }}</p></div></div></div>
-{% empty %}<p>No categories added yet.</p>{% endfor %}
-</div>{% endblock %}
+{% load static %}
+{% block title %}Categories | Fix Your Elaka{% endblock %}
+
+{% block extra_head %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'core/css/fye-cards.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="fye-page">
+  <header class="fye-page-head">
+    <h1>Report categories</h1>
+    <p>Choose a category to see the matching community reports.</p>
+  </header>
+
+  <div class="fye-tiles">
+    {% for category in categories %}
+    <a class="fye-tile fye-tile--{{ category.type }}" href="{% url 'reports:list' %}?category={{ category.pk }}">
+      <span class="fye-tile-icon" aria-hidden="true"><i class="bi {{ category.icon_class }}"></i></span>
+      <span class="fye-tile-kicker">{{ category.get_type_display }}</span>
+      <h2 class="fye-tile-title">{{ category.name }}</h2>
+      <p class="fye-tile-text">{{ category.description|default:"Local community concern"|truncatechars:110 }}</p>
+      <div class="fye-tile-badges">
+        {% if category.type == 'safety' %}
+          <span class="fye-count fye-count--private"><i class="bi bi-lock-fill" aria-hidden="true"></i> Reviewed privately</span>
+        {% else %}
+          <span class="fye-count fye-count--open">{{ category.open_count }} open report{{ category.open_count|pluralize }}</span>
+          {% if category.new_count %}<span class="fye-count fye-count--new">{{ category.new_count }} new this week</span>{% endif %}
+        {% endif %}
+      </div>
+      <span class="fye-tile-cta">View reports <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+    </a>
+    {% empty %}
+    <p>No categories added yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

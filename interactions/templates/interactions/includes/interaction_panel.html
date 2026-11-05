@@ -33,26 +33,41 @@
 </div>
 
 {# Comments #}
-<div class="card shadow-sm mb-4" id="comments">
-  <div class="card-header bg-white fw-semibold">Comments ({{ comments|length }})</div>
-  <ul class="list-group list-group-flush">
+<div class="card shadow-sm mb-4 fye-comments" id="comments">
+  <div class="card-header bg-white fw-semibold d-flex align-items-center gap-2">
+    <i class="bi bi-chat-dots"></i> Comments
+    <span class="fye-comments-count">{{ comments|length }}</span>
+  </div>
+
+  <div class="fye-comments-list">
     {% for comment in comments %}
-      <li class="list-group-item">
-        <div class="small text-muted">
-          <strong>{{ comment.user.username }}</strong> &middot; {{ comment.created_at|date:"d M Y, H:i" }}
+      <article class="fye-comment">
+        <div class="fye-comment-avatar" aria-hidden="true">{{ comment.user.username|first|upper }}</div>
+        <div class="fye-comment-body">
+          <div class="fye-comment-meta">
+            <strong>{{ comment.user.username }}</strong>
+            <time datetime="{{ comment.created_at|date:'c' }}">{{ comment.created_at|date:"d M Y, H:i" }}</time>
+          </div>
+          <p class="fye-comment-text">{{ comment.text }}</p>
         </div>
-        <div style="white-space: pre-line;">{{ comment.text }}</div>
-      </li>
+      </article>
     {% empty %}
-      <li class="list-group-item text-muted small">No comments yet.</li>
+      <p class="fye-comments-empty">
+        <i class="bi bi-chat-square-text"></i><br>
+        No comments yet. Be the first to share an update.
+      </p>
     {% endfor %}
-  </ul>
+  </div>
+
   {% if user.is_authenticated %}
-    <div class="card-body border-top">
+    <div class="fye-comment-form">
       <form method="post" action="{% url 'interactions:add_comment' report.pk %}">
         {% csrf_token %}
+        <label for="{{ comment_form.text.id_for_label }}" class="visually-hidden">Add a comment</label>
         {{ comment_form.text }}
-        <button type="submit" class="btn btn-primary btn-sm mt-2">Post comment</button>
+        <button type="submit" class="btn btn-primary btn-sm mt-2">
+          <i class="bi bi-send"></i> Post comment
+        </button>
       </form>
     </div>
   {% endif %}

@@ -1,9 +1,41 @@
 {% extends "base.html" %}
-{% block title %}Areas | Fixyour elaka{% endblock %}
+{% load static %}
+{% block title %}Areas | Fix Your Elaka{% endblock %}
+
+{% block extra_head %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'core/css/fye-cards.css' %}">
+{% endblock %}
+
 {% block content %}
-<h1 class="h2 mb-4">Areas</h1><div class="row g-3">
-{% for area in areas %}<div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm"><div class="card-body"><h2 class="h5">{{ area.name }}</h2><p class="text-muted">{{ area.description|default:'Community area' }}</p></div></div></div>
-{% empty %}<p>No areas added yet. An administrator can add them.</p>{% endfor %}
+<div class="fye-page">
+  <header class="fye-page-head">
+    <h1>Browse areas</h1>
+    <p>Choose an area to see the community reports submitted there.</p>
+  </header>
+
+  <div class="fye-tiles">
+    {% for area in areas %}
+    <a class="fye-tile fye-tile--area" href="{% url 'reports:list' %}?area={{ area.pk }}">
+      <span class="fye-tile-icon" aria-hidden="true"><i class="bi bi-geo-alt-fill"></i></span>
+      <h2 class="fye-tile-title">{{ area.name }}</h2>
+      <p class="fye-tile-text">{{ area.description|default:"Community area"|truncatechars:110 }}</p>
+      <div class="fye-tile-badges">
+        <span class="fye-count fye-count--open">{{ area.open_count }} open report{{ area.open_count|pluralize }}</span>
+        {% if area.new_count %}<span class="fye-count fye-count--new">{{ area.new_count }} new this week</span>{% endif %}
+      </div>
+      <span class="fye-tile-cta">View reports <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+    </a>
+    {% empty %}
+    <p>No areas added yet. An administrator can add them.</p>
+    {% endfor %}
+  </div>
+
+  {% if is_paginated %}
+  <nav class="fye-pager" aria-label="Areas pages">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">&larr; Previous</a>{% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next &rarr;</a>{% endif %}
+  </nav>
+  {% endif %}
 </div>
-{% if is_paginated %}<nav class="mt-4">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %} <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span> {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
 {% endblock %}
