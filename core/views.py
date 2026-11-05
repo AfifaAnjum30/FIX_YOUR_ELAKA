@@ -14,6 +14,10 @@ class HomeView(TemplateView):
         ctx = super().get_context_data(**kwargs)
         ctx['area_count'] = Area.objects.count()
         ctx['category_count'] = Category.objects.count()
+
+        # 8 newest public reports (verified, non-safety), newest first
+        reports = public_reports()
+        ctx['recent_reports'] = list(reports[:8]) if reports is not None else []
         return ctx
 
 

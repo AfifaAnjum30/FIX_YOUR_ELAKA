@@ -21,6 +21,13 @@ class Category(models.Model):
         ('environment', 'Environment'),
         ('safety', 'Safety Concern'),
     )
+    ICONS = {
+        'infrastructure': 'bi-cone-striped',
+        'public_utilities': 'bi-lightning-charge-fill',
+        'environment': 'bi-tree-fill',
+        'safety': 'bi-shield-exclamation',
+    }
+
     name = models.CharField(max_length=100)
     type = models.CharField(max_length=30, choices=TYPE_CHOICES)
     description = models.TextField(blank=True)
@@ -33,6 +40,12 @@ class Category(models.Model):
 
     def __str__(self):
         return f'{self.name} ({self.get_type_display()})'
+
+    @property
+    def icon_class(self):
+        """Bootstrap Icons class used for the category icon on cards."""
+        return self.ICONS.get(self.type, 'bi-tag-fill')
+
 
 class ContactMessage(models.Model):
     name = models.CharField(max_length=100)

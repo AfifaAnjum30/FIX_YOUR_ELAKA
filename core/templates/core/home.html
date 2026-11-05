@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Fix Your Elaka | Make Change Happen{% endblock %}
+{% block extra_head %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'core/css/fye-carousel.css' %}">
+{% endblock %}
 {% block content %}
 <div class="fye-home">
   <section class="fye-hero" aria-labelledby="fye-hero-title">
@@ -39,4 +42,8 @@
 
   <section class="fye-explore-section"><div class="fye-explore-inner fye-reveal"><div><span class="fye-section-tag">DISCOVER YOUR COMMUNITY</span><h2>Every neighborhood<br>deserves attention.</h2><p>Explore covered areas and the types of issues that matter to your community.</p><div class="fye-explore-actions"><a class="fye-button fye-button-dark" href="{% url 'core:areas' %}">Browse Areas <i class="bi bi-arrow-up-right"></i></a><a class="fye-button fye-button-outline" href="{% url 'core:categories' %}">View Categories</a></div></div><div class="fye-explore-graphic" aria-hidden="true"><div class="fye-graphic-ring"><i class="bi bi-geo-alt-fill"></i></div><span class="fye-graphic-dot dot-a"></span><span class="fye-graphic-dot dot-b"></span><span class="fye-graphic-dot dot-c"></span></div></div></section>
 </div>
+{% include "core/includes/recent_reports.html" %}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'core/js/recent-reports-carousel.js' %}" defer></script>
 {% endblock %}

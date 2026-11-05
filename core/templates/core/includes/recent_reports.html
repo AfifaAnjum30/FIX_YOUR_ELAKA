@@ -1,0 +1,49 @@
+<section class="rc-section" aria-labelledby="rc-title">
+  <div class="rc-inner">
+    <div class="rc-head">
+      <div>
+        <h2 id="rc-title">Recent Community Reports</h2>
+        <p>See what's happening in your community. Every report brings us one step closer to a better neighbourhood.</p>
+      </div>
+      <a class="rc-viewall" href="{% url 'reports:list' %}">View All Reports <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </div>
+
+    {% if recent_reports %}
+    <div class="rc-carousel" data-rc>
+      <button type="button" class="rc-arrow rc-prev" aria-label="Previous reports"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+
+      <ul class="rc-track" tabindex="0" aria-label="Recent community reports. Use the left and right arrow keys to scroll.">
+        {% for report in recent_reports %}
+        <li class="rc-card">
+          <div class="rc-media">
+            {% if report.before_image %}
+              <img src="{{ report.before_image.url }}" alt="Photo of {{ report.title }}" loading="lazy">
+            {% else %}
+              <div class="rc-ph" aria-hidden="true"><i class="bi {{ report.category.icon_class }}"></i></div>
+            {% endif %}
+            <span class="rc-status rc-status--{{ report.operational_status }}">{{ report.get_operational_status_display }}</span>
+          </div>
+
+          <div class="rc-body">
+            <span class="rc-cat"><i class="bi {{ report.category.icon_class }}" aria-hidden="true"></i> {{ report.category.get_type_display }}</span>
+            <h3 class="rc-title">{{ report.title }}</h3>
+            <p class="rc-place"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i><span>{{ report.area.name }} &middot; {{ report.location_text }}</span></p>
+            <div class="rc-foot">
+              <time class="rc-date" datetime="{{ report.created_at|date:'Y-m-d' }}">{{ report.created_at|date:"j M Y" }}</time>
+              <a class="rc-more" href="{{ report.get_absolute_url }}">View Details <i class="bi bi-arrow-right" aria-hidden="true"></i><span class="visually-hidden"> of {{ report.title }}</span></a>
+            </div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <button type="button" class="rc-arrow rc-next" aria-label="Next reports"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+    </div>
+    {% else %}
+    <div class="rc-empty">
+      <i class="bi bi-clipboard-check" aria-hidden="true"></i>
+      <p class="mb-0 mt-2">No public reports yet. Verified reports will appear here.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
