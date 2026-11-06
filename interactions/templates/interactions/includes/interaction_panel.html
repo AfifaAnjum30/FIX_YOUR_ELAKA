@@ -17,7 +17,18 @@
           <i class="bi bi-hand-thumbs-down"></i> Downvote ({{ summary.downvotes }})
         </button>
       </form>
-
+    {% elif user.is_authenticated }
+      {# Authorities and admins: same buttons, but disabled #}
+      <span title="Only citizens can vote">
+        <button type="button" class="btn btn-sm btn-outline-success" disabled>
+          <i class="bi bi-hand-thumbs-up"></i> Upvote ({{ summary.upvotes }})
+        </button>
+      </span>
+      <span title="Only citizens can vote">
+        <button type="button" class="btn btn-sm btn-outline-danger" disabled>
+          <i class="bi bi-hand-thumbs-down"></i> Downvote ({{ summary.downvotes }})
+        </button>
+      </span>
     {% else %}
       <span class="text-muted small">
         <i class="bi bi-hand-thumbs-up"></i> {{ summary.upvotes }}
