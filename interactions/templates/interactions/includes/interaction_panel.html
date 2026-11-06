@@ -2,7 +2,7 @@
 <div class="card shadow-sm mb-4" id="votes">
   <div class="card-header bg-white fw-semibold">Community support</div>
   <div class="card-body d-flex flex-wrap align-items-center gap-3">
-    {% if user.is_authenticated %}
+    {%    if user.is_authenticated and user.is_citizen %}
       <form method="post" action="{% url 'interactions:toggle_vote' report.pk %}">
         {% csrf_token %}
         <input type="hidden" name="vote_value" value="1">
