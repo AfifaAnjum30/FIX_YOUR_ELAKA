@@ -1,5 +1,6 @@
 from __future__ import annotations
-
+from django.contrib import messages
+from django.shortcuts import redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
@@ -49,6 +50,11 @@ def toggle_vote(request: HttpRequest, report_id: int) -> HttpResponse:
       same value again   -> delete (toggle off)
     """
     report = _get_visible_report(request, report_id)
+    if not request.user.is_citizen:
+        messages.error(request, "Only citizens can upvote or downvote reports.")
+        return redirect(f"{report.get_absolute_url()}#votes")
+
+
     form = VoteForm(request.POST)
 
     if not form.is_valid():
