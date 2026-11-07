@@ -134,38 +134,7 @@
 .ad-empty__title { font-weight: 700; margin: 10px 0 2px; }
 .ad-empty .ad-btn { margin-top: 10px; }
 
-/* 5. AREA PERFORMANCE --------------------------------------------------- */
-.ad-perf { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 28px; align-items: center; }
-.ad-ring { position: relative; width: 170px; height: 170px; margin: 0 auto; }
-.ad-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.ad-ring circle { fill: none; stroke-width: 11; }
-.ad-ring__track { stroke: #f3ede1; }
-.ad-ring__bar { stroke: var(--ad-teal); stroke-linecap: round; }
-.ad-ring__label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.ad-ring__label strong { font-size: 1.9rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; }
-.ad-ring__label span { font-size: .75rem; color: var(--ad-muted); }
 
-.ad-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 0; }
-.ad-metrics > div { background: #fffaf0; border: 1px solid var(--ad-line); border-radius: var(--ad-radius-sm); padding: 14px 16px; }
-.ad-metrics dt { font-size: .78rem; font-weight: 600; color: var(--ad-muted); margin-bottom: 4px; }
-.ad-metrics dd { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; }
-
-.ad-monthly { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--ad-line); }
-.ad-monthly__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
-.ad-monthly__head h3 { font-size: .95rem; font-weight: 800; margin: 0; }
-.ad-legend { display: flex; gap: 14px; list-style: none; margin: 0; padding: 0; font-size: .8rem; color: var(--ad-muted); }
-.ad-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; }
-.ad-swatch--received, .ad-bar--received { background: var(--ad-amber); }
-.ad-swatch--resolved, .ad-bar--resolved { background: var(--ad-teal); }
-
-.ad-bars { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
-.ad-bars__col { display: flex; flex-direction: column; align-items: center; }
-.ad-bars__pair { display: flex; align-items: flex-end; justify-content: center; gap: 6px; width: 100%; height: 130px; padding-top: 18px; border-bottom: 1px solid #e9e1cf; }
-.ad-bar { position: relative; display: block; width: min(26px, 38%); min-height: 2px; border-radius: 6px 6px 0 0; }
-.ad-bar em { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); padding-bottom: 2px; font-size: .72rem; font-style: normal; font-weight: 700; color: var(--ad-ink); }
-.ad-bars__label { font-size: .78rem; color: var(--ad-muted); margin-top: 6px; }
-
-.ad-note { margin: 18px 0 0; font-size: .8rem; color: var(--ad-muted); }
 
 /* 6. RESPONSIVE --------------------------------------------------------- */
 @media (max-width: 991.98px) {
@@ -178,7 +147,7 @@
 @media (max-width: 767.98px) {
   .ad-page { padding: 18px 14px 40px; }
   .ad-header, .ad-card { padding: 18px 16px; }
-  .ad-perf { grid-template-columns: 1fr; gap: 20px; }
+
 
   /* table rows become stacked cards */
   .ad-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
@@ -197,7 +166,7 @@
   .ad-stat { min-height: 0; padding: 14px 14px; }
   .ad-stat__value { font-size: 1.9rem; }
   .ad-stat__label { font-size: .8rem; }
-  .ad-bars { gap: 4px; }
+
 }
 
 @media (prefers-reduced-motion: reduce) {
